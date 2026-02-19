@@ -4,224 +4,714 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>C# Complete Reference</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0f; --surface: #12121a; --card: #1a1a26; --border: #2a2a40;
-  --accent: #cccccc; --accent2: #aaaaaa; --accent3: #999999;
-  --green: #cccccc; --red: #cccccc; --text: #e0e0e0; --muted: #888888; --code-bg: #1a1a1a;
-  /* Mapping module colors to the muted theme */
-  --m1: #888; --m2: #888; --m3: #888; --m4: #888; --m5: #888; --m6: #888;
+  --bg: #0d0d0d;
+  --surface: #141414;
+  --card: #1a1a1a;
+  --border: #2a2a2a;
+  --border-hover: #3a3a3a;
+  --text: #e0e0e0;
+  --muted: #666;
+  --muted2: #444;
+  --code-bg: #111;
+  --accent: #fff;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
 
-/* Header & Nav */
-.header {
-  padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--border);
-  background: var(--surface);
+/* ── Topbar ── */
+.topbar {
+  display:flex; align-items:center; gap:1rem;
+  padding:0 1.5rem; height:48px;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
 }
-.header h1 {
-  font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -1px;
-  color: #ffffff;
+.topbar-brand {
+  font-size:.85rem; font-weight:700; color:var(--text);
+  white-space:nowrap; letter-spacing:-.3px; flex-shrink:0;
 }
-.header h1 span { color: var(--accent); }
-.header p { color: var(--muted); margin-top: 0.4rem; font-size: 0.95rem; }
-
-.nav {
-  display: flex; gap: 0.5rem; padding: 1rem 2rem; border-bottom: 1px solid var(--border);
-  background: var(--surface); position: sticky; top: 0; z-index: 100; align-items: center;
+.topbar-brand span { color:var(--muted); font-weight:400; }
+.topbar-nav {
+  display:flex; gap:.25rem; flex-shrink:0;
 }
 .nav-btn {
-  padding: 0.45rem 1.1rem; border: 1px solid var(--border); background: transparent;
-  color: var(--muted); border-radius: 999px; font-family: 'Syne', sans-serif;
-  font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  padding:.3rem .75rem; border:1px solid transparent;
+  background:transparent; color:var(--muted);
+  border-radius:6px; font-family:'Inter',sans-serif;
+  font-size:.75rem; font-weight:500; cursor:pointer;
+  white-space:nowrap; transition:all .15s;
 }
-.nav-btn:hover { border-color: #777; color: #ccc; }
-.nav-btn.active, .nav-btn.m2.active, .nav-btn.m3.active, 
-.nav-btn.m4.active, .nav-btn.m5.active, .nav-btn.m6.active { 
-  background: #444; color: #fff; border-color: #555; font-weight: 700; 
+.nav-btn:hover { color:var(--text); background:var(--card); }
+.nav-btn.active {
+  background:var(--card); color:var(--text);
+  border-color:var(--border); font-weight:600;
 }
+.topbar-divider { width:1px; height:20px; background:var(--border); flex-shrink:0; }
 
-/* Search */
-.search-wrap { position: relative; margin-left: auto; flex-shrink: 0; }
+/* ── Search ── */
+.search-wrap { position:relative; margin-left:auto; flex-shrink:0; }
 .search-input {
-  background: var(--card); border: 1px solid var(--border); color: var(--text);
-  font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
-  padding: 0.4rem 2.2rem 0.4rem 0.9rem; border-radius: 999px;
-  width: 180px; outline: none; transition: all 0.2s;
+  background:var(--card); border:1px solid var(--border);
+  color:var(--text); font-family:'JetBrains Mono',monospace;
+  font-size:.75rem; padding:.3rem 1.8rem .3rem .75rem;
+  border-radius:6px; width:180px; outline:none; transition:all .2s;
 }
-.search-input:focus { border-color: #777; width: 240px; }
-.search-input::placeholder { color: var(--muted); }
-.search-clear { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1rem; cursor: pointer; display: none; background: none; border: none; }
+.search-input:focus { border-color:var(--border-hover); width:240px; }
+.search-input::placeholder { color:var(--muted2); }
+.search-hint {
+  position:absolute; right:2rem; top:50%; transform:translateY(-50%);
+  font-size:.65rem; color:var(--muted2); pointer-events:none;
+  font-family:'JetBrains Mono',monospace;
+}
+.search-clear {
+  position:absolute; right:.5rem; top:50%; transform:translateY(-50%);
+  color:var(--muted); font-size:.9rem; cursor:pointer;
+  display:none; background:none; border:none; line-height:1;
+}
 .search-results {
-  position: absolute; top: calc(100% + 8px); right: 0; background: var(--card);
-  border: 1px solid var(--border); border-radius: 12px; width: 320px;
-  max-height: 420px; overflow-y: auto; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  display: none;
+  position:absolute; top:calc(100% + 6px); right:0;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:8px; width:340px; max-height:420px;
+  overflow-y:auto; z-index:999;
+  box-shadow:0 8px 24px rgba(0,0,0,.6); display:none;
 }
-.search-results.open { display: block; }
-.sr-item { padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
-.sr-item:hover { background: #222; }
-.sr-mod { font-size: 0.65rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 0.2rem; }
-.sr-title { font-size: 0.88rem; font-weight: 700; color: var(--text); }
-.sr-snippet { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; font-family: 'JetBrains Mono', monospace; }
+.search-results.open { display:block; }
+.sr-item {
+  padding:.6rem .9rem; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .1s;
+}
+.sr-item:last-child { border-bottom:none; }
+.sr-item:hover { background:#1f1f1f; }
+.sr-mod { font-size:.62rem; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:.15rem; }
+.sr-title { font-size:.82rem; font-weight:600; color:var(--text); }
+.sr-sub { font-size:.7rem; color:var(--muted); margin-top:.1rem; }
+.sr-highlight { color:#fff; background:#2a2a2a; border-radius:2px; padding:0 2px; }
+.sr-empty { padding:1rem; text-align:center; color:var(--muted); font-size:.82rem; }
 
-/* Main Content */
-.main { max-width: 900px; margin: 0 auto; padding: 2rem; }
-.section { display: none; animation: fadeIn 0.3s ease; }
-.section.active { display: block; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+/* ── Layout ── */
+.layout { display:flex; height:calc(100vh - 48px); overflow:hidden; }
 
-.section-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-.tag { font-size: 0.68rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-family: 'JetBrains Mono', monospace; background: #333; color: #aaa; }
-/* Override module tags to match the gray style */
-.tag-m1, .tag-m2, .tag-m3, .tag-m4, .tag-m5, .tag-m6 { background: #333; color: #aaa; }
+/* ── Sidebar (treeview) ── */
+.sidebar {
+  width:260px; flex-shrink:0;
+  background:var(--surface); border-right:1px solid var(--border);
+  overflow-y:auto; padding:.75rem 0;
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-track { background:transparent; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
-.topic-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1rem; overflow: hidden; transition: border-color 0.2s; }
-.topic-card:hover { border-color: rgba(255,255,255,0.15); }
-.topic-header { padding: 1rem 1.2rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
-.topic-header h3 { font-size: 0.95rem; font-weight: 700; }
-.topic-sub { font-size: 0.73rem; color: var(--muted); margin-top: 0.12rem; font-weight: 400; }
-.arrow { color: var(--muted); transition: transform 0.3s; font-size: 1rem; }
-.topic-card.open .arrow { transform: rotate(180deg); }
-.topic-body { display: none; padding: 0 1.2rem 1.2rem; border-top: 1px solid var(--border); }
-.topic-card.open .topic-body { display: block; }
+/* Tree */
+.tree-group { margin-bottom:.125rem; }
+.tree-mod {
+  display:flex; align-items:center; gap:.5rem;
+  padding:.45rem 1rem; cursor:pointer;
+  font-size:.78rem; font-weight:600; color:var(--text);
+  user-select:none; transition:background .1s;
+}
+.tree-mod:hover { background:var(--card); }
+.tree-mod.open { color:#fff; }
+.tree-arrow {
+  font-size:.6rem; color:var(--muted); transition:transform .2s; flex-shrink:0;
+}
+.tree-mod.open .tree-arrow { transform:rotate(90deg); color:var(--text); }
+.tree-mod-label { flex:1; min-width:0; }
+.tree-count {
+  font-size:.65rem; font-family:'JetBrains Mono',monospace;
+  color:var(--muted); background:var(--card);
+  border:1px solid var(--border); border-radius:3px;
+  padding:.05rem .3rem; flex-shrink:0;
+}
+.tree-children { display:none; padding:.125rem 0; }
+.tree-mod.open + .tree-children { display:block; }
+.tree-item {
+  display:flex; align-items:flex-start; gap:.5rem;
+  padding:.35rem 1rem .35rem 2rem; cursor:pointer;
+  transition:background .1s; border-left:2px solid transparent;
+}
+.tree-item:hover { background:var(--card); }
+.tree-item.active {
+  background:var(--card); border-left-color:var(--text);
+}
+.tree-num {
+  font-size:.62rem; font-family:'JetBrains Mono',monospace;
+  color:var(--muted2); flex-shrink:0; margin-top:.1rem; width:16px;
+}
+.tree-item-text { flex:1; min-width:0; }
+.tree-title { font-size:.75rem; font-weight:500; color:var(--text); display:block; }
+.tree-sub { font-size:.66rem; color:var(--muted); display:block; margin-top:.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* Code & Syntax */
-pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 0.8rem 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.65; color: #c9d1d9; }
-.kw{color:#ff79c6} .ty{color:#8be9fd} .str{color:#f1fa8c} .cm{color:#6272a4;font-style:italic} .num{color:#bd93f9} .fn{color:#50fa7b} .op{color:#ff79c6}
+/* ── Content ── */
+.content {
+  flex:1; overflow-y:auto; padding:1.5rem 2rem;
+  max-width:860px;
+}
+.content::-webkit-scrollbar { width:4px; }
+.content::-webkit-scrollbar-track { background:transparent; }
+.content::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
-/* Components */
-.note, .warn, .tip { background: #222; border-left: 3px solid #555; padding: 0.65rem 1rem; border-radius: 0 8px 8px 0; margin: 0.8rem 0; font-size: 0.85rem; color: #aaa; }
-p { line-height: 1.7; color: #a0a0c0; margin: 0.5rem 0; font-size: 0.9rem; }
-h4 { color: #888; font-size: 0.78rem; margin: 1rem 0 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+.section { display:none; animation:fadeIn .2s ease; }
+.section.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 
-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.82rem; }
-th { background: var(--surface); color: #999; padding: 0.55rem 0.8rem; text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; }
-td { padding: 0.55rem 0.8rem; border-top: 1px solid var(--border); color: #a0a0c0; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+.section-title {
+  font-size:1.1rem; font-weight:700; margin-bottom:1.25rem;
+  display:flex; align-items:center; gap:.6rem; color:#fff;
+}
+.tag {
+  font-size:.6rem; padding:.15rem .45rem; border-radius:4px;
+  font-family:'JetBrains Mono',monospace;
+  background:var(--card); color:var(--muted); border:1px solid var(--border);
+}
 
-/* Overview Grid */
-.hero-stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
-.stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; text-align: center; flex: 1; min-width: 100px; }
-.stat .val { font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-.stat .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+/* ── Overview section ── */
+#section-overview {
+  display:none; /* hidden — overview is always the sidebar */
+}
 
-.overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.8rem; }
-.ov-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
-.ov-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: #555; }
-.ov-card:hover { border-color: #555; }
-.ov-card h3 { font-size: 0.88rem; margin-bottom: 0.2rem; }
-.ov-card p { font-size: 0.74rem; color: var(--muted); margin: 0; }
-.ov-num { position: absolute; top: 0.8rem; right: 0.8rem; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--border); }
+/* ── Topic cards ── */
+.topic-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:8px; margin-bottom:.6rem; overflow:hidden;
+  transition:border-color .15s;
+}
+.topic-card:hover { border-color:var(--border-hover); }
+.topic-header {
+  padding:.75rem 1rem; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+  user-select:none; gap:.5rem;
+}
+.topic-header div { flex:1; min-width:0; }
+.topic-header h3 { font-size:.85rem; font-weight:600; }
+.topic-sub { font-size:.68rem; color:var(--muted); margin-top:.1rem; }
+.arrow { color:var(--muted2); transition:transform .25s; font-size:.75rem; flex-shrink:0; }
+.topic-card.open .arrow { transform:rotate(180deg); }
+.topic-body {
+  display:none; padding:.125rem 1rem 1rem;
+  border-top:1px solid var(--border);
+}
+.topic-card.open .topic-body { display:block; }
 
-/* Unified module text colors */
-.m1-txt, .m2-txt, .m3-txt, .m4-txt, .m5-txt, .m6-txt { color: #e0e0e0; }
+/* ── Code ── */
+pre {
+  background:var(--code-bg); border:1px solid var(--border);
+  border-radius:6px; padding:.85rem 1rem; margin:.65rem 0;
+  overflow-x:auto; font-family:'JetBrains Mono',monospace;
+  font-size:.75rem; line-height:1.65; color:#c9d1d9;
+}
+.kw{color:#ff79c6} .ty{color:#8be9fd} .str{color:#f1fa8c}
+.cm{color:#555;font-style:italic} .num{color:#bd93f9}
+.fn{color:#50fa7b} .op{color:#ff79c6}
+
+/* ── Info boxes ── */
+.info,.note,.warn,.tip {
+  border-radius:0 6px 6px 0; margin:.65rem 0;
+  font-size:.8rem; padding:.55rem .9rem; line-height:1.55;
+}
+.info { background:#111a22; border-left:2px solid #336; color:#8aa; }
+.note { background:#1a1a1a; border-left:2px solid #333; color:#888; }
+.warn { background:#1a1700; border-left:2px solid #554400; color:#aa8833; }
+.tip  { background:#0d1a10; border-left:2px solid #224422; color:#668866; }
+
+/* ── Tables ── */
+table { width:100%; border-collapse:collapse; margin:.65rem 0; font-size:.78rem; }
+th { background:#111; color:var(--muted); padding:.45rem .7rem; text-align:left; font-size:.67rem; text-transform:uppercase; letter-spacing:.8px; }
+td { padding:.45rem .7rem; border-top:1px solid var(--border); color:#999; font-family:'JetBrains Mono',monospace; font-size:.74rem; }
+tr:hover td { background:#1f1f1f; }
+
+p { line-height:1.7; color:#888; margin:.4rem 0; font-size:.83rem; }
+h4 { color:var(--muted); font-size:.7rem; margin:.85rem 0 .25rem; text-transform:uppercase; letter-spacing:.8px; }
+
+/* ── Mod label (inside topic body) ── */
+.mod-label { display:none; }
+
+/* ── Scrollbar global ── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>C# <span>Complete</span> Reference</h1>
-  <p>Modulo I — Basi &nbsp;•&nbsp; Modulo II — OOP &nbsp;•&nbsp; Modulo III — File &nbsp;•&nbsp; Modulo IV — Avanzato &nbsp;•&nbsp; Modulo V — Extra &nbsp;•&nbsp; Modulo VI — Pro</p>
-</div>
-<nav class="nav">
-  <button class="nav-btn active" onclick="show('overview',this)">Overview</button>
-  <button class="nav-btn" onclick="show('mod1',this)">I — Basi</button>
-  <button class="nav-btn m2" onclick="show('mod2',this)">II — OOP</button>
-  <button class="nav-btn m3" onclick="show('mod3',this)">III — File & Dati</button>
-  <button class="nav-btn m4" onclick="show('mod4',this)">IV — Avanzato</button>
-  <button class="nav-btn m5" onclick="show('mod5',this)">V — Extra</button>
-  <button class="nav-btn m6" onclick="show('mod6',this)">VI — Pro</button>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">C# <span>Reference</span></div>
+  <div class="topbar-divider"></div>
+  <nav class="topbar-nav">
+    <button class="nav-btn active" data-mod="mod1" onclick="showMod('mod1',this)">I — Basi</button>
+    <button class="nav-btn" data-mod="mod2" onclick="showMod('mod2',this)">II — OOP</button>
+    <button class="nav-btn" data-mod="mod3" onclick="showMod('mod3',this)">III — File</button>
+    <button class="nav-btn" data-mod="mod4" onclick="showMod('mod4',this)">IV — Avanzato</button>
+    <button class="nav-btn" data-mod="mod5" onclick="showMod('mod5',this)">V — Extra</button>
+    <button class="nav-btn" data-mod="mod6" onclick="showMod('mod6',this)">VI — Pro</button>
+  </nav>
   <div class="search-wrap" id="searchWrap">
-    <input class="search-input" id="searchInput" type="text" placeholder="Cerca…" autocomplete="off" oninput="onSearch()" onfocus="openResults()"/>
+    <input class="search-input" id="searchInput" type="text"
+           placeholder="Cerca… (/ per focus)" autocomplete="off"
+           oninput="onSearch()" onfocus="openResults()"/>
+    <span class="search-hint" id="searchHint">/</span>
     <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
     <div class="search-results" id="searchResults"></div>
   </div>
-</nav>
-<div class="main">
+</header>
 
-<!-- OVERVIEW -->
-<div class="section active" id="section-overview">
-  <div class="section-title">Guida Completa C#</div>
-  <div class="hero-stats">
-    <div class="stat"><div class="val m1-txt">15</div><div class="lbl">Mod I — Basi</div></div>
-    <div class="stat"><div class="val m2-txt">10</div><div class="lbl">Mod II — OOP</div></div>
-    <div class="stat"><div class="val m3-txt">7</div><div class="lbl">Mod III — File</div></div>
-    <div class="stat"><div class="val m4-txt">8</div><div class="lbl">Mod IV — Avanzato</div></div>
-    <div class="stat"><div class="val m5-txt">6</div><div class="lbl">Mod V — Extra</div></div>
-    <div class="stat"><div class="val m6-txt">9</div><div class="lbl">Mod VI — Pro</div></div>
-    <div class="stat"><div class="val" style="color:#fff">46</div><div class="lbl">Totale Argomenti</div></div>
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR: treeview -->
+  <aside class="sidebar">
+<div class="tree">
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod1">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">I — Basi</span>
+      <span class="tree-count">15</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod1',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Tipi di Dato</span>
+          <span class="tree-sub">int, double, string, bool, var, const, casting</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Input / Output</span>
+          <span class="tree-sub">Console.Write, ReadLine, interpolazione</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Aritmetica & Math</span>
+          <span class="tree-sub">+−×÷%, operatori composti, libreria Math</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Confronto & Booleani</span>
+          <span class="tree-sub">==, !=, &&, ||, !, operatore ternario</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Strutture di Controllo</span>
+          <span class="tree-sub">if/else, switch, switch expression</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Ciclo for</span>
+          <span class="tree-sub">Iterazioni note, break, continue, step</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Ciclo while / do-while</span>
+          <span class="tree-sub">Condizione prima/dopo, loop interattivo</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Array & foreach</span>
+          <span class="tree-sub">Array fisso, 2D, jagged, metodi Array</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',8)">
+        <span class="tree-num">09</span>
+        <div class="tree-item-text">
+          <span class="tree-title">List&lt;T&gt;</span>
+          <span class="tree-sub">Add, Remove, Find, Sort, Clear, ToArray</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',9)">
+        <span class="tree-num">10</span>
+        <div class="tree-item-text">
+          <span class="tree-title">String — Metodi</span>
+          <span class="tree-sub">Length, Split, Trim, Replace, Substring…</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',10)">
+        <span class="tree-num">11</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Enum</span>
+          <span class="tree-sub">Enumerazioni, valori, casting, Flags</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',11)">
+        <span class="tree-num">12</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Metodi</span>
+          <span class="tree-sub">Parametri, return, overload, ref/out, ricorsione</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',12)">
+        <span class="tree-num">13</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Struct</span>
+          <span class="tree-sub">Tipo valore, costruttori, metodi</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',13)">
+        <span class="tree-num">14</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Nullable & Null Operators</span>
+          <span class="tree-sub">int?, ??, ?., HasValue</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',14)">
+        <span class="tree-num">15</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Scope & Visibilità</span>
+          <span class="tree-sub">Scope locale, blocco, shadowing</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="overview-grid">
-    <!-- MOD I -->
-    <div class="ov-card m1" onclick="showTopic('mod1',0)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">01</span><h3>Tipi di Dato</h3><p>int, double, string, bool, var, const, casting</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',1)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">02</span><h3>Input / Output</h3><p>Console.WriteLine, ReadLine, $"interpolazione"</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',2)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">03</span><h3>Aritmetica</h3><p>+−×÷%, operatori composti, Math</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',3)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">04</span><h3>Confronto &amp; Booleani</h3><p>==, !=, &gt;, &lt;, &amp;&amp;, ||, !, ternario</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',4)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">05</span><h3>Strutture di Controllo</h3><p>if/else, switch, switch expression</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',5)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">06</span><h3>Ciclo for</h3><p>Iterazioni note, break, continue</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',6)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">07</span><h3>Ciclo while / do-while</h3><p>Condizione prima/dopo, loop menu</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',7)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">08</span><h3>Array &amp; foreach</h3><p>Fisso, 2D, jagged, metodi Array</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',8)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">09</span><h3>List&lt;T&gt;</h3><p>Add/Remove/Find/Sort/Clear/ToArray</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',9)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">10</span><h3>String — Metodi</h3><p>Length, Split, Trim, Replace, Substring…</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',10)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">11</span><h3>Enum</h3><p>Enumerazioni, flag, casting</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',11)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">12</span><h3>Metodi</h3><p>Parametri, return, overload, ref/out, ricorsione</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',12)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">13</span><h3>Struct</h3><p>Tipo valore, costruttori, metodi</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',13)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">14</span><h3>Nullable &amp; Null Operators</h3><p>int?, ??, ?., HasValue</p></div>
-    <div class="ov-card m1" onclick="showTopic('mod1',14)"><div class="mod-label m1-txt">MOD I</div><span class="ov-num">15</span><h3>Scope &amp; Visibilità</h3><p>Scope variabili, shadowing, static</p></div>
-    <!-- MOD II -->
-    <div class="ov-card m2" onclick="showTopic('mod2',0)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">01</span><h3>Classi &amp; Oggetti</h3><p>Blueprint, istanza, new, this</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',1)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">02</span><h3>Costruttori</h3><p>Inizializzazione, overload, object initializer</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',2)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">03</span><h3>Proprietà</h3><p>get/set, auto-property, validazione</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',3)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">04</span><h3>Incapsulamento</h3><p>public, private, protected, internal</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',4)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">05</span><h3>Ereditarietà</h3><p>class Figlia : Padre, base, override</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',5)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">06</span><h3>Interfacce</h3><p>Contratto, implementazione multipla</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',6)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">07</span><h3>Polimorfismo</h3><p>virtual, override, abstract, sealed</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',7)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">08</span><h3>Eccezioni</h3><p>try/catch/finally, throw, custom exceptions</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',8)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">09</span><h3>Static &amp; Object Init</h3><p>static class, membri statici, initializer</p></div>
-    <div class="ov-card m2" onclick="showTopic('mod2',9)"><div class="mod-label m2-txt">MOD II</div><span class="ov-num">10</span><h3>is, as, typeof</h3><p>Type checking, casting sicuro</p></div>
-    <!-- MOD III -->
-    <div class="ov-card m3" onclick="showTopic('mod3',0)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">01</span><h3>File di Testo</h3><p>ReadAllText, WriteAllText, AppendAllText</p></div>
-    <div class="ov-card m3" onclick="showTopic('mod3',1)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">02</span><h3>Stream</h3><p>StreamReader, StreamWriter, using</p></div>
-    <div class="ov-card m3" onclick="showTopic('mod3',2)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">03</span><h3>JSON</h3><p>JsonSerializer Serialize/Deserialize</p></div>
-    <div class="ov-card m3" onclick="showTopic('mod3',3)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">04</span><h3>XML</h3><p>XmlSerializer, XDocument</p></div>
-    <div class="ov-card m3" onclick="showTopic('mod3',4)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">05</span><h3>Eccezioni I/O</h3><p>FileNotFoundException, IOException</p></div>
-    <div class="ov-card m3" onclick="showTopic('mod3',5)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">06</span><h3>Dictionary&lt;K,V&gt;</h3><p>Chiave-valore, ContainsKey, TryGetValue</p></div>
-    <div class="ov-card m3" onclick="showTopic('mod3',6)"><div class="mod-label m3-txt">MOD III</div><span class="ov-num">07</span><h3>Classe Path</h3><p>Combine, GetFileName, GetExtension</p></div>
-    <!-- MOD IV -->
-    <div class="ov-card m4" onclick="showTopic('mod4',0)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">01</span><h3>LINQ</h3><p>Where, Select, OrderBy, GroupBy, First</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',1)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">02</span><h3>Generics &lt;T&gt;</h3><p>Classi e metodi generici, constraints</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',2)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">03</span><h3>Delegates &amp; Events</h3><p>Func, Action, delegate, event</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',3)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">04</span><h3>Lambda &amp; Closures</h3><p>=&gt;, espressioni, variabili catturate</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',4)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">05</span><h3>async / await</h3><p>Task, async, await, Task.WhenAll</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',5)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">06</span><h3>DateTime</h3><p>Now, Parse, Add, Format, TimeSpan</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',6)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">07</span><h3>StringBuilder</h3><p>Append, Insert, Replace, performance</p></div>
-    <div class="ov-card m4" onclick="showTopic('mod4',7)"><div class="mod-label m4-txt">MOD IV</div><span class="ov-num">08</span><h3>Random &amp; Math</h3><p>Next, NextDouble, Math library completa</p></div>
-    <!-- MOD V -->
-    <div class="ov-card m5" onclick="showTopic('mod5',0)"><div class="mod-label m5-txt">MOD V</div><span class="ov-num">01</span><h3>Tuple &amp; ValueTuple</h3><p>Ritorno multiplo, named tuples</p></div>
-    <div class="ov-card m5" onclick="showTopic('mod5',1)"><div class="mod-label m5-txt">MOD V</div><span class="ov-num">02</span><h3>Pattern Matching</h3><p>switch expression, is, when</p></div>
-    <div class="ov-card m5" onclick="showTopic('mod5',2)"><div class="mod-label m5-txt">MOD V</div><span class="ov-num">03</span><h3>Record</h3><p>Immutabilità, with, value equality</p></div>
-    <div class="ov-card m5" onclick="showTopic('mod5',3)"><div class="mod-label m5-txt">MOD V</div><span class="ov-num">04</span><h3>HashSet &amp; Queue &amp; Stack</h3><p>Collezioni specializzate</p></div>
-    <div class="ov-card m5" onclick="showTopic('mod5',4)"><div class="mod-label m5-txt">MOD V</div><span class="ov-num">05</span><h3>Regular Expressions</h3><p>Regex, Match, IsMatch, Replace</p></div>
-    <div class="ov-card m5" onclick="showTopic('mod5',5)"><div class="mod-label m5-txt">MOD V</div><span class="ov-num">06</span><h3>Preprocessore &amp; Attributi</h3><p>#region, #if, [Obsolete], [Serializable]</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',0)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">01</span><h3>IDisposable &amp; using</h3><p>Gestione risorse, IDisposable, using pattern</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',1)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">02</span><h3>IEnumerable &amp; yield</h3><p>Iteratori, IEnumerable&lt;T&gt;, yield return</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',2)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">03</span><h3>Extension Methods</h3><p>Metodi estensione, this keyword</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',3)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">04</span><h3>Thread &amp; Task</h3><p>Multi-threading, lock, CancellationToken</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',4)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">05</span><h3>Collezioni Avanzate</h3><p>SortedDictionary, ConcurrentDictionary, LinkedList</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',5)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">06</span><h3>Interfacce Fondamentali</h3><p>IComparable, IEquatable, IComparer</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',6)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">07</span><h3>Operator Overloading</h3><p>Sovraccaricare operatori +, ==, !=, >, &lt;</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',7)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">08</span><h3>Indexers &amp; Properties avanzate</h3><p>Indicizzatori, init-only, required</p></div>
-    <div class="ov-card m6" onclick="showTopic('mod6',8)"><div class="mod-label m6-txt">MOD VI</div><span class="ov-num">09</span><h3>Namespaces &amp; using</h3><p>namespace, using, global using, alias</p></div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod2">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">II — OOP</span>
+      <span class="tree-count">10</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod2',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Classi & Oggetti</span>
+          <span class="tree-sub">Blueprint, istanza, new, this</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Costruttori</span>
+          <span class="tree-sub">Default, parametri, overload, object initializer</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Proprietà</span>
+          <span class="tree-sub">get/set, auto-property, validazione, read-only</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Incapsulamento</span>
+          <span class="tree-sub">public, private, protected, internal</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Ereditarietà</span>
+          <span class="tree-sub">class Figlia : Padre, base, override</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Interfacce</span>
+          <span class="tree-sub">interface, implementazione multipla, contratto</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Polimorfismo</span>
+          <span class="tree-sub">virtual, override, abstract, sealed</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Eccezioni</span>
+          <span class="tree-sub">try/catch/finally, throw, custom exceptions</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',8)">
+        <span class="tree-num">09</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Static & Object Init</span>
+          <span class="tree-sub">static class, membri statici, initializer</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',9)">
+        <span class="tree-num">10</span>
+        <div class="tree-item-text">
+          <span class="tree-title">is, as, typeof</span>
+          <span class="tree-sub">Type checking, casting sicuro, runtime</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod3">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">III — File</span>
+      <span class="tree-count">7</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod3',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">File di Testo</span>
+          <span class="tree-sub">ReadAllText, WriteAllText, AppendAllText</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">StreamReader/Writer</span>
+          <span class="tree-sub">Lettura/scrittura riga per riga, encoding UTF-8</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">JSON</span>
+          <span class="tree-sub">JsonSerializer Serialize/Deserialize, opzioni</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">XML</span>
+          <span class="tree-sub">XmlSerializer, XDocument, LINQ to XML</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Eccezioni I/O</span>
+          <span class="tree-sub">FileNotFoundException, IOException, pattern</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Dictionary&lt;K,V&gt;</span>
+          <span class="tree-sub">Chiave-valore, ContainsKey, TryGetValue</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Classe Path</span>
+          <span class="tree-sub">Combine, GetFileName, GetExtension</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod4">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">IV — Avanzato</span>
+      <span class="tree-count">8</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod4',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">LINQ</span>
+          <span class="tree-sub">Where, Select, OrderBy, GroupBy, First, Sum</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Generics &lt;T&gt;</span>
+          <span class="tree-sub">Classi/metodi generici, constraints where T:</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Delegates & Events</span>
+          <span class="tree-sub">Func, Action, Predicate, delegate, event</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Lambda & Closures</span>
+          <span class="tree-sub">=> espressioni, corpo, variabili catturate</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">async / await</span>
+          <span class="tree-sub">Task, async, await, WhenAll, WhenAny</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">DateTime & TimeSpan</span>
+          <span class="tree-sub">Now, Parse, Add, Format, differenza date</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">StringBuilder</span>
+          <span class="tree-sub">Append, Insert, Replace, performance loop</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Random & Utilità</span>
+          <span class="tree-sub">Next, NextDouble, shuffle, elemento casuale</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod5">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">V — Extra</span>
+      <span class="tree-count">6</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod5',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Tuple & ValueTuple</span>
+          <span class="tree-sub">Ritorno multiplo, named tuples, decostruzione</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Pattern Matching</span>
+          <span class="tree-sub">switch expression avanzata, is, when, range</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Record</span>
+          <span class="tree-sub">Immutabilità, with expression, value equality</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">HashSet, Queue & Stack</span>
+          <span class="tree-sub">Elementi unici, FIFO, LIFO</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Regular Expressions</span>
+          <span class="tree-sub">IsMatch, Match, Matches, Replace, Groups</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Preprocessore & Attributi</span>
+          <span class="tree-sub">#region, #if DEBUG, [Obsolete], [Serializable]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod6">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">VI — Pro</span>
+      <span class="tree-count">9</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod6',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">IDisposable & using</span>
+          <span class="tree-sub">Gestione risorse, pattern Dispose, using sintattico</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">IEnumerable & yield</span>
+          <span class="tree-sub">Iteratori pigri, yield return, yield break</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Extension Methods</span>
+          <span class="tree-sub">Metodi estensione, this keyword, static class</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Thread, Task & Parallel</span>
+          <span class="tree-sub">Task.Run, lock, CancellationToken, Interlocked</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Collezioni Avanzate</span>
+          <span class="tree-sub">SortedDictionary, ConcurrentDictionary, LinkedList</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Interfacce Fondamentali</span>
+          <span class="tree-sub">IComparable, IEquatable, IComparer</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Operator Overloading</span>
+          <span class="tree-sub">Sovraccaricare +, ==, !=, conversioni implicite</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Indexers & Properties</span>
+          <span class="tree-sub">Indicizzatori, init-only, required, backing field</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',8)">
+        <span class="tree-num">09</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Namespaces & using</span>
+          <span class="tree-sub">namespace, global using, file-scoped, alias</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+  </aside>
 
-<!-- MOD I -->
+  <!-- CONTENT -->
+  <main class="content">
+
 <div class="section" id="section-mod1">
-  <div class="section-title">Modulo I — Basi del C# <span class="tag tag-m1">MOD I</span></div>
-
-  <div class="topic-card">
+  <div class="section-title">I — Basi <span class="tag">MOD I</span></div>
+<div class="topic-card">
     <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Tipi di Dato</h3><div class="topic-sub">int, double, string, bool, char, var, const, casting, overflow</div></div><span class="arrow">▼</span></div>
     <div class="topic-body">
       <h4>Interi</h4>
@@ -658,10 +1148,12 @@ nome ??= <span class="str">"Default"</span>;  <span class="cm">// assegna solo s
 </div>
 
 <!-- MOD II -->
-<div class="section" id="section-mod2">
-  <div class="section-title">Modulo II — OOP <span class="tag tag-m2">MOD II</span></div>
+<div class="section"
+</div>
 
-  <div class="topic-card">
+<div class="section" id="section-mod2">
+  <div class="section-title">II — OOP <span class="tag">MOD II</span></div>
+<div class="topic-card">
     <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Classi &amp; Oggetti</h3><div class="topic-sub">Blueprint, istanza, new, this, campi pubblici</div></div><span class="arrow">▼</span></div>
     <div class="topic-body">
       <pre><span class="kw">class</span> <span class="ty">Persona</span> {
@@ -925,10 +1417,12 @@ Console.<span class="fn">WriteLine</span>(p.<span class="fn">GetType</span>()); 
 </div>
 
 <!-- MOD III -->
-<div class="section" id="section-mod3">
-  <div class="section-title">Modulo III — File &amp; Dati <span class="tag tag-m3">MOD III</span></div>
+<div class="section"
+</div>
 
-  <div class="topic-card">
+<div class="section" id="section-mod3">
+  <div class="section-title">III — File <span class="tag">MOD III</span></div>
+<div class="topic-card">
     <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. File di Testo</h3><div class="topic-sub">File.ReadAllText, WriteAllText, AppendAllText, ReadAllLines</div></div><span class="arrow">▼</span></div>
     <div class="topic-body">
       <pre><span class="kw">using</span> System.IO;
@@ -1116,10 +1610,12 @@ Path.<span class="fn">ChangeExtension</span>(path, <span class="str">".pdf"</spa
 </div>
 
 <!-- MOD IV -->
-<div class="section" id="section-mod4">
-  <div class="section-title">Modulo IV — Avanzato <span class="tag tag-m4">MOD IV</span></div>
+<div class="section"
+</div>
 
-  <div class="topic-card">
+<div class="section" id="section-mod4">
+  <div class="section-title">IV — Avanzato <span class="tag">MOD IV</span></div>
+<div class="topic-card">
     <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. LINQ</h3><div class="topic-sub">Where, Select, OrderBy, GroupBy, First, Count, Sum, Any, All</div></div><span class="arrow">▼</span></div>
     <div class="topic-body">
       <p>LINQ (Language Integrated Query) permette di interrogare collezioni come se fossero database.</p>
@@ -1386,10 +1882,12 @@ List&lt;<span class="ty">int</span>&gt; lista = <span class="kw">new</span>() { 
 </div>
 
 <!-- MOD V -->
-<div class="section" id="section-mod5">
-  <div class="section-title">Modulo V — Extra &amp; Moderno <span class="tag tag-m5">MOD V</span></div>
+<div class="section"
+</div>
 
-  <div class="topic-card">
+<div class="section" id="section-mod5">
+  <div class="section-title">V — Extra <span class="tag">MOD V</span></div>
+<div class="topic-card">
     <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Tuple &amp; ValueTuple</h3><div class="topic-sub">Ritorno multiplo, named tuples, decostruzione</div></div><span class="arrow">▼</span></div>
     <div class="topic-body">
       <pre><span class="cm">// Tuple — restituire più valori da un metodo:</span>
@@ -1573,15 +2071,14 @@ Console.<span class="fn">WriteLine</span>(<span class="str">"Produzione"</span>)
   </div>
 </div>
 
-</div><!-- /main -->
+</div>
+</div>
 
-<div class="main">
 <div class="section" id="section-mod6">
-  <div class="section-title">Modulo VI — Pro &amp; Avanzato <span class="tag tag-m6">MOD VI</span></div>
-
-  <!-- 1. IDisposable & using -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>1. IDisposable &amp; using</h3><span class="topic-sub">Gestione risorse non gestite, pattern Dispose</span></div>
+  <div class="section-title">VI — Pro <span class="tag">MOD VI</span></div>
+<!-- 1. IDisposable & using -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>1. IDisposable &amp; using</h3><span class="topic-sub">Gestione risorse non gestite, pattern Dispose</span></div>
     <div class="topic-body">
       <div class="info">Implementa <b>IDisposable</b> per rilasciare risorse non gestite (file, connessioni DB, socket). Il blocco <code>using</code> chiama <code>Dispose()</code> automaticamente anche in caso di eccezione.</div>
       <pre><span class="cm">// Implementare IDisposable:</span>
@@ -1620,8 +2117,8 @@ Console.<span class="fn">WriteLine</span>(<span class="str">"Produzione"</span>)
   </div>
 
   <!-- 2. IEnumerable & yield -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>2. IEnumerable&lt;T&gt; &amp; yield</h3><span class="topic-sub">Iteratori personalizzati, lazy evaluation, yield return</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>2. IEnumerable&lt;T&gt; &amp; yield</h3><span class="topic-sub">Iteratori personalizzati, lazy evaluation, yield return</span></div>
     <div class="topic-body">
       <div class="info"><code>IEnumerable&lt;T&gt;</code> è l'interfaccia alla base di foreach e LINQ. <code>yield return</code> permette di creare sequenze pigre senza costruire un'intera lista in memoria.</div>
       <pre><span class="cm">// IEnumerable&lt;T&gt; — base di foreach e LINQ:</span>
@@ -1657,8 +2154,8 @@ Console.<span class="fn">WriteLine</span>(<span class="str">"Produzione"</span>)
   </div>
 
   <!-- 3. Extension Methods -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>3. Extension Methods</h3><span class="topic-sub">Aggiungere metodi a classi esistenti senza modificarle</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>3. Extension Methods</h3><span class="topic-sub">Aggiungere metodi a classi esistenti senza modificarle</span></div>
     <div class="topic-body">
       <div class="info">I metodi estensione permettono di aggiungere metodi a qualsiasi tipo — anche sealed o di libreria — senza ereditarietà. Devono stare in una classe <code>static</code> e il primo parametro usa <code>this</code>.</div>
       <pre><span class="cm">// Classe statica con metodi estensione:</span>
@@ -1677,7 +2174,7 @@ Console.<span class="fn">WriteLine</span>(<span class="str">"Produzione"</span>)
 <span class="cm">// Uso — come se fossero metodi nativi:</span>
 <span class="kw">string</span> nome = <span class="str">"mario"</span>;
 Console.<span class="fn">WriteLine</span>(nome.<span class="fn">Capitalizza</span>());  <span class="cm">// "Mario"</span>
-Console.<span class="fn">WriteLine</span>(<span class="str">"test@mail.it"</span>.<span class="fn">EEmail</span>()); <span class="cm">// true</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8afeeff9fecae7ebe3e6a4e3fe">[email&#160;protected]</a>"</span>.<span class="fn">EEmail</span>()); <span class="cm">// true</span>
 Console.<span class="fn">WriteLine</span>(<span class="str">"ab"</span>.<span class="fn">Ripeti</span>(<span class="num">3</span>));          <span class="cm">// "ababab"</span>
 
 <span class="cm">// Estensione su List&lt;T&gt;:</span>
@@ -1697,8 +2194,8 @@ Console.<span class="fn">WriteLine</span>(nomi.<span class="fn">CasualeItem</spa
   </div>
 
   <!-- 4. Thread & Task -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>4. Thread, Task &amp; Parallelismo</h3><span class="topic-sub">Thread, lock, CancellationToken, Parallel, Task.Run</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>4. Thread, Task &amp; Parallelismo</h3><span class="topic-sub">Thread, lock, CancellationToken, Parallel, Task.Run</span></div>
     <div class="topic-body">
       <div class="info">Per operazioni CPU-intensive usa <code>Task.Run</code>. Per evitare race conditions su dati condivisi usa <code>lock</code>. <code>CancellationToken</code> permette di annullare operazioni in modo cooperativo.</div>
       <pre><span class="cm">// Task.Run — esegui su thread pool:</span>
@@ -1746,8 +2243,8 @@ thread.<span class="fn">Join</span>(); <span class="cm">// aspetta</span></pre>
   </div>
 
   <!-- 5. Collezioni Avanzate -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>5. Collezioni Avanzate</h3><span class="topic-sub">SortedDictionary, ConcurrentDictionary, LinkedList, SortedSet</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>5. Collezioni Avanzate</h3><span class="topic-sub">SortedDictionary, ConcurrentDictionary, LinkedList, SortedSet</span></div>
     <div class="topic-body">
       <pre><span class="cm">// SortedDictionary — chiavi sempre ordinate:</span>
 <span class="kw">var</span> sd = <span class="kw">new</span> <span class="ty">SortedDictionary</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt;();
@@ -1788,8 +2285,8 @@ ll.<span class="fn">Remove</span>(nodo);
   </div>
 
   <!-- 6. Interfacce Fondamentali -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>6. Interfacce Fondamentali</h3><span class="topic-sub">IComparable&lt;T&gt;, IEquatable&lt;T&gt;, IComparer&lt;T&gt;, ICloneable</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>6. Interfacce Fondamentali</h3><span class="topic-sub">IComparable&lt;T&gt;, IEquatable&lt;T&gt;, IComparer&lt;T&gt;, ICloneable</span></div>
     <div class="topic-body">
       <pre><span class="cm">// IComparable&lt;T&gt; — permette ordinamento naturale:</span>
 <span class="kw">class</span> <span class="ty">Studente</span> : IComparable&lt;<span class="ty">Studente</span>&gt; {
@@ -1830,8 +2327,8 @@ studenti.<span class="fn">Sort</span>((a, b) =&gt; a.Nome.<span class="fn">Compa
   </div>
 
   <!-- 7. Operator Overloading -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>7. Operator Overloading</h3><span class="topic-sub">Sovraccaricare +, -, ==, !=, >, &lt;, conversioni implicite/esplicite</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>7. Operator Overloading</h3><span class="topic-sub">Sovraccaricare +, -, ==, !=, >, &lt;, conversioni implicite/esplicite</span></div>
     <div class="topic-body">
       <div class="info">In C# puoi ridefinire il comportamento degli operatori per le tue classi/struct. Gli operatori di uguaglianza (==, !=) vanno sempre in coppia, così come (&lt;, &gt;) e (&lt;=, &gt;=).</div>
       <pre><span class="kw">struct</span> <span class="ty">Vettore2D</span> {
@@ -1875,8 +2372,8 @@ Console.<span class="fn">WriteLine</span>(v3);            <span class="cm">// (4
   </div>
 
   <!-- 8. Indexers & Advanced Properties -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>8. Indexers &amp; Proprietà Avanzate</h3><span class="topic-sub">Indicizzatori, init-only, required, computed, backing field</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>8. Indexers &amp; Proprietà Avanzate</h3><span class="topic-sub">Indicizzatori, init-only, required, computed, backing field</span></div>
     <div class="topic-body">
       <pre><span class="cm">// Indexer — accesso con [] sulla tua classe:</span>
 <span class="kw">class</span> <span class="ty">Rubrica</span> {
@@ -1925,8 +2422,8 @@ Console.<span class="fn">WriteLine</span>(r[<span class="str">"Marco"</span>]); 
   </div>
 
   <!-- 9. Namespaces -->
-  <div class="topic-card" onclick="toggle(this)">
-    <div class="topic-header"><h3>9. Namespaces &amp; using Direttive</h3><span class="topic-sub">namespace, using, global using, alias, namespace file-scoped</span></div>
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>9. Namespaces &amp; using Direttive</h3><span class="topic-sub">namespace, using, global using, alias, namespace file-scoped</span></div>
     <div class="topic-body">
       <pre><span class="cm">// Definire un namespace:</span>
 <span class="kw">namespace</span> MiaApp.Modelli {
@@ -1975,97 +2472,169 @@ Web.<span class="ty">HttpContext</span> ctx = ...;
   </div>
 
 </div>
-</div><!-- /main extra -->
+</div>
+
+  </main>
+
+</div>
+
 <script>
-function show(id, btn) {
+const MODS = ['mod1','mod2','mod3','mod4','mod5','mod6'];
+
+// ── Active tracking ──
+let currentMod = 'mod1';
+let currentCard = -1;
+
+// ── Show module ──
+function showMod(modId, btn) {
+  currentMod = modId;
+  // sections
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + id).classList.add('active');
+  document.getElementById('section-' + modId).classList.add('active');
+  // nav buttons
   if (btn) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
+  // expand that tree group, collapse others
+  document.querySelectorAll('.tree-mod').forEach(m => {
+    if (m.dataset.mod === modId) {
+      m.classList.add('open');
+    } else {
+      m.classList.remove('open');
+    }
+  });
+  // reset card highlight
+  markTreeItem(-1);
 }
-function toggle(card) { card.classList.toggle('open'); }
-function showTopic(moduleId, idx) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + moduleId).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const order = ['overview','mod1','mod2','mod3','mod4','mod5','mod6'];
-  document.querySelectorAll('.nav-btn')[order.indexOf(moduleId)].classList.add('active');
-  const cards = document.querySelectorAll('#section-' + moduleId + ' .topic-card');
-  cards.forEach(c => c.classList.remove('open'));
+
+// ── Show specific topic ──
+function showTopic(modId, idx) {
+  // Switch module if needed
+  if (modId !== currentMod) {
+    const btn = document.querySelector('.nav-btn[data-mod="' + modId + '"]');
+    showMod(modId, btn);
+  }
+  currentCard = idx;
+  // Open that card, close others
+  const cards = document.querySelectorAll('#section-' + modId + ' .topic-card');
+  cards.forEach((c, i) => {
+    if (i === idx) c.classList.add('open');
+    else c.classList.remove('open');
+  });
+  // Scroll card into view
   if (cards[idx]) {
-    cards[idx].classList.add('open');
-    setTimeout(() => cards[idx].scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    setTimeout(() => cards[idx].scrollIntoView({behavior:'smooth', block:'start'}), 60);
+  }
+  markTreeItem(idx);
+  closeResults();
+}
+
+// ── Highlight tree item ──
+function markTreeItem(idx) {
+  document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+  if (idx < 0) return;
+  const items = document.querySelectorAll('#section-' + currentMod + ' ~ * .tree-item, .tree-children .tree-item');
+  // simpler: find by mod group
+  const grp = document.querySelector('.tree-mod[data-mod="' + currentMod + '"]');
+  if (grp) {
+    const children = grp.nextElementSibling?.querySelectorAll('.tree-item');
+    if (children && children[idx]) children[idx].classList.add('active');
   }
 }
 
-// SEARCH
+// ── Tree toggle ──
+function treeToggle(el) {
+  const modId = el.dataset.mod;
+  const isOpen = el.classList.contains('open');
+  if (!isOpen) {
+    // switch to this module too
+    const btn = document.querySelector('.nav-btn[data-mod="' + modId + '"]');
+    showMod(modId, btn);
+  } else {
+    el.classList.remove('open');
+  }
+}
+
+function toggle(card) { card.classList.toggle('open'); }
+
+// ── Init: open first module tree group ──
+(function() {
+  const firstMod = document.querySelector('.tree-mod[data-mod="mod1"]');
+  if (firstMod) firstMod.classList.add('open');
+  document.getElementById('section-mod1').classList.add('active');
+})();
+
+// ── Search ──
 const MODULE_LABELS = {
-  mod1: 'Mod I — Basi', mod2: 'Mod II — OOP',
-  mod3: 'Mod III — File', mod4: 'Mod IV — Avanzato', mod5: 'Mod V — Extra', mod6: 'Mod VI — Pro'
+  mod1:'I — Basi', mod2:'II — OOP', mod3:'III — File',
+  mod4:'IV — Avanzato', mod5:'V — Extra', mod6:'VI — Pro'
 };
-function buildIndex() {
-  const index = [];
-  ['mod1','mod2','mod3','mod4','mod5','mod6'].forEach(modId => {
-    const cards = document.querySelectorAll('#section-' + modId + ' .topic-card');
-    cards.forEach((card, idx) => {
-      const title = card.querySelector('h3')?.innerText || '';
-      const sub   = card.querySelector('.topic-sub')?.innerText || '';
-      const body  = card.querySelector('.topic-body')?.innerText || '';
-      index.push({ modId, idx, title, sub, text: (title+' '+sub+' '+body).toLowerCase(), displayText: body.trim() });
+let _index = null;
+function getIndex() {
+  if (_index) return _index;
+  _index = [];
+  MODS.forEach(modId => {
+    document.querySelectorAll('#section-' + modId + ' .topic-card').forEach((card, idx) => {
+      const title = card.querySelector('h3')?.textContent || '';
+      const sub   = card.querySelector('.topic-sub')?.textContent || '';
+      const body  = card.querySelector('.topic-body')?.textContent || '';
+      _index.push({ modId, idx, title, sub,
+        text: (title+' '+sub+' '+body).toLowerCase(),
+        bodySnippet: body.trim().slice(0,200) });
     });
   });
-  return index;
+  return _index;
 }
-let _index = null;
-function getIndex() { return _index || (_index = buildIndex()); }
-function highlight(str, query) {
-  const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-  return str.replace(re, '<span class="sr-highlight">$1</span>');
-}
-function getSnippet(bodyText, query) {
-  const lower = bodyText.toLowerCase();
-  const pos = lower.indexOf(query.toLowerCase());
-  if (pos === -1) return bodyText.slice(0, 60) + '…';
-  const start = Math.max(0, pos - 20);
-  const end   = Math.min(bodyText.length, pos + query.length + 40);
-  return (start > 0 ? '…' : '') + bodyText.slice(start, end) + (end < bodyText.length ? '…' : '');
+function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function highlight(s, q) {
+  return s.replace(new RegExp('('+esc(q)+')','gi'),'<span class="sr-highlight">$1</span>');
 }
 function onSearch() {
-  const query = document.getElementById('searchInput').value.trim();
+  const q = document.getElementById('searchInput').value.trim();
   const clearBtn = document.getElementById('searchClear');
-  clearBtn.style.display = query ? 'block' : 'none';
-  if (!query) { closeResults(); return; }
+  const hint = document.getElementById('searchHint');
+  clearBtn.style.display = q ? 'block' : 'none';
+  if (hint) hint.style.display = q ? 'none' : '';
+  if (!q) { closeResults(); return; }
   openResults();
-  const results = getIndex().filter(item => item.text.includes(query.toLowerCase()));
+  const results = getIndex().filter(r => r.text.includes(q.toLowerCase())).slice(0,18);
   const box = document.getElementById('searchResults');
-  if (results.length === 0) {
-    box.innerHTML = '<div class="sr-empty">Nessun risultato per "<b>' + query + '</b>"</div>';
+  if (!results.length) {
+    box.innerHTML = '<div class="sr-empty">Nessun risultato per "<b>'+q+'</b>"</div>';
     return;
   }
   box.innerHTML = results.map(r => {
-    const snippet = getSnippet(r.displayText, query);
-    return `<div class="sr-item" onclick="goToResult('${r.modId}', ${r.idx})">
-      <div class="sr-mod">${MODULE_LABELS[r.modId]}</div>
-      <div class="sr-title">${highlight(r.title, query)}</div>
-      <div class="sr-snippet">${highlight(snippet, query)}</div>
-    </div>`;
+    const bl = r.bodySnippet.toLowerCase();
+    const pos = bl.indexOf(q.toLowerCase());
+    let snippet = pos !== -1
+      ? (pos>20?'\u2026':'')+r.bodySnippet.slice(Math.max(0,pos-20), Math.min(r.bodySnippet.length,pos+q.length+50))+'\u2026'
+      : r.bodySnippet.slice(0,80)+'\u2026';
+    return '<div class="sr-item" onclick="showTopic(\'' + r.modId + '\',' + r.idx + ')">'
+      + '<div class="sr-mod">' + MODULE_LABELS[r.modId] + '</div>'
+      + '<div class="sr-title">' + highlight(r.title, q) + '</div>'
+      + '<div class="sr-sub">' + highlight(snippet, q) + '</div>'
+      + '</div>';
   }).join('');
 }
-function goToResult(modId, idx) { clearSearch(); showTopic(modId, idx); }
-function openResults() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (q) document.getElementById('searchResults').classList.add('open');
-}
+function openResults() { if (document.getElementById('searchInput').value.trim()) document.getElementById('searchResults').classList.add('open'); }
 function closeResults() { document.getElementById('searchResults').classList.remove('open'); }
 function clearSearch() {
   document.getElementById('searchInput').value = '';
   document.getElementById('searchClear').style.display = 'none';
+  const hint = document.getElementById('searchHint');
+  if (hint) hint.style.display = '';
   closeResults();
 }
 document.addEventListener('click', e => {
   if (!document.getElementById('searchWrap').contains(e.target)) closeResults();
+});
+document.addEventListener('keydown', e => {
+  const inp = document.getElementById('searchInput');
+  if (e.key === '/' && document.activeElement !== inp) {
+    e.preventDefault(); inp.focus();
+  }
+  if (e.key === 'Escape') { clearSearch(); inp.blur(); }
 });
 </script>
 </body>
