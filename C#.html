@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C# Master Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --card: #1a1a26; --border: #2a2a40;
+    --accent: #cccccc; --accent2: #aaaaaa; --accent3: #999999;
+    --green: #cccccc; --red: #cccccc; --text: #e0e0e0; --muted: #888888; --code-bg: #1a1a1a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+  .header {
+    padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .header h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -1px;
+    color: #ffffff;
+  }
+  .header p { color: var(--muted); margin-top: 0.4rem; font-size: 0.95rem; }
+  .nav {
+    display: flex; gap: 0.5rem; padding: 1rem 2rem; overflow: visible;
+    border-bottom: 1px solid var(--border); scrollbar-width: none;
+    background: var(--surface); position: sticky; top: 0; z-index: 100;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    padding: 0.45rem 1.1rem; border: 1px solid var(--border); background: transparent;
+    color: var(--muted); border-radius: 999px; font-family: 'Syne', sans-serif;
+    font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: #777; color: #ccc; }
+  .nav-btn.active { background: #444; color: #fff; border-color: #555; font-weight: 700; }
+  .nav-btn.m2.active { background: #444; border-color: #555; color: #fff; }
+  .nav-btn.m3.active { background: #444; border-color: #555; color: #fff; }
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem; }
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .section-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .tag { font-size: 0.68rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-family: 'JetBrains Mono', monospace; }
+  .tag-mod1 { background: #333; color: #aaa; }
+  .tag-mod2 { background: #333; color: #aaa; }
+  .tag-mod3 { background: #333; color: #aaa; }
+  .topic-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1rem; overflow: hidden; transition: border-color 0.2s; }
+  .topic-card:hover { border-color: rgba(255,255,255,0.15); }
+  .topic-header { padding: 1rem 1.2rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .topic-header h3 { font-size: 0.95rem; font-weight: 700; }
+  .topic-sub { font-size: 0.73rem; color: var(--muted); margin-top: 0.12rem; font-weight: 400; }
+  .arrow { color: var(--muted); transition: transform 0.3s; font-size: 1rem; flex-shrink: 0; margin-left: 1rem; }
+  .topic-card.open .arrow { transform: rotate(180deg); }
+  .topic-body { display: none; padding: 0 1.2rem 1.2rem; border-top: 1px solid var(--border); }
+  .topic-card.open .topic-body { display: block; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 0.8rem 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.65; color: #c9d1d9; }
+  .kw{color:#ff79c6} .ty{color:#8be9fd} .str{color:#f1fa8c} .cm{color:#6272a4;font-style:italic} .num{color:#bd93f9} .fn{color:#50fa7b}
+  .note { background: #222; border-left: 3px solid #555; padding: 0.65rem 1rem; border-radius: 0 8px 8px 0; margin: 0.8rem 0; font-size: 0.85rem; color: #aaa; }
+  .warn { background: #222; border-left: 3px solid #666; padding: 0.65rem 1rem; border-radius: 0 8px 8px 0; margin: 0.8rem 0; font-size: 0.85rem; color: #bbb; }
+  p { line-height: 1.7; color: #a0a0c0; margin: 0.5rem 0; font-size: 0.9rem; }
+  h4 { color: #888; font-size: 0.78rem; margin: 1rem 0 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.82rem; }
+  th { background: var(--surface); color: #999; padding: 0.55rem 0.8rem; text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 0.55rem 0.8rem; border-top: 1px solid var(--border); color: #a0a0c0; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+  /* OVERVIEW */
+  .hero-stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; text-align: center; flex: 1; min-width: 100px; }
+  .stat .val { font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .stat .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+  .c1{color:#e0e0e0} .c2{color:#e0e0e0} .c3{color:#e0e0e0}
+  .overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.8rem; }
+  .ov-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .ov-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .ov-card.m1::before { background: #555; }
+  .ov-card.m2::before { background: #555; }
+  .ov-card.m3::before { background: #555; }
+  .ov-card:hover { border-color: #555; }
+  .ov-card h3 { font-size: 0.88rem; margin-bottom: 0.2rem; }
+  .ov-card p { font-size: 0.74rem; color: var(--muted); margin: 0; }
+  .ov-num { position: absolute; top: 0.8rem; right: 0.8rem; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--border); }
+
+  /* SEARCH */
+  .search-wrap { position: relative; margin-left: auto; flex-shrink: 0; }
+  .search-input {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    padding: 0.4rem 2.2rem 0.4rem 0.9rem; border-radius: 999px;
+    width: 180px; outline: none; transition: all 0.2s;
+  }
+  .search-input:focus { border-color: #777; width: 240px; }
+  .search-input::placeholder { color: var(--muted); }
+  .search-icon { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; pointer-events: none; }
+  .search-clear { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1rem; cursor: pointer; display: none; background: none; border: none; line-height: 1; }
+  .search-results {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    width: 320px; max-height: 420px; overflow-y: auto; z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none;
+  }
+  .search-results.open { display: block; }
+  .sr-item {
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sr-item:last-child { border-bottom: none; }
+  .sr-item:hover { background: #222; }
+  .sr-mod { font-size: 0.65rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 0.2rem; }
+  .sr-title { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+  .sr-snippet { font-size: 0.74rem; color: var(--muted); margin-top: 0.2rem; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sr-highlight { color: #fff; background: #444; border-radius: 3px; padding: 0 2px; }
+  .sr-empty { padding: 1.2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+  .search-results::-webkit-scrollbar { width: 4px; }
+  .search-results::-webkit-scrollbar-track { background: transparent; }
+  .search-results::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>C# Master Guide</h1>
+  <p>Modulo I &nbsp;•&nbsp; Modulo II &nbsp;•&nbsp; Modulo III &nbsp;|&nbsp; Tutto il tuo corso in un posto solo</p>
+</div>
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('overview',this)">Overview</button>
+  <button class="nav-btn" onclick="show('mod1',this)">Mod I — Basi</button>
+  <button class="nav-btn m2" onclick="show('mod2',this)">Mod II — OOP</button>
+  <button class="nav-btn m3" onclick="show('mod3',this)">Mod III — File</button>
+  <div class="search-wrap" id="searchWrap">
+    <input class="search-input" id="searchInput" type="text" placeholder="🔍 Cerca… (es. IndexOf)" autocomplete="off" oninput="onSearch()" onfocus="openResults()" />
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</nav>
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="section active" id="section-overview">
+  <div class="section-title">Il tuo percorso completo</div>
+  <div class="hero-stats">
+    <div class="stat"><div class="val c1">13</div><div class="lbl">Argomenti Mod I</div></div>
+    <div class="stat"><div class="val c2">8</div><div class="lbl">Argomenti Mod II</div></div>
+    <div class="stat"><div class="val c3">5</div><div class="lbl">Argomenti Mod III</div></div>
+    <div class="stat"><div class="val" style="color:#fff">26</div><div class="lbl">Totale</div></div>
+  </div>
+  <div class="overview-grid">
+    <div class="ov-card m1" onclick="showTopic('mod1',0)"><span class="ov-num">01</span><h3>Tipi di Dato</h3><p>int, double, string, bool, var, const, casting</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',1)"><span class="ov-num">02</span><h3>Input / Output</h3><p>Console.WriteLine, ReadLine, interpolazione $""</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',2)"><span class="ov-num">03</span><h3>Aritmetica</h3><p>+−×÷%, operatori composti, Math library</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',3)"><span class="ov-num">04</span><h3>Operatori di Confronto</h3><p>==, !=, &gt;, &lt;, &gt;=, &lt;=</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',4)"><span class="ov-num">05</span><h3>Operatori Booleani</h3><p>&amp;&amp;, ||, !, operatore ternario</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',5)"><span class="ov-num">06</span><h3>Strutture di Controllo</h3><p>if/else, switch, switch expression</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',6)"><span class="ov-num">07</span><h3>Ciclo for</h3><p>Iterazioni note, break, continue</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',7)"><span class="ov-num">08</span><h3>Ciclo while</h3><p>Condizione prima, rischio loop infinito</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',8)"><span class="ov-num">09</span><h3>Ciclo do while</h3><p>Almeno 1 esecuzione garantita</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',9)"><span class="ov-num">10</span><h3>Array &amp; foreach</h3><p>Collezione fissa, indice da 0</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',10)"><span class="ov-num">11</span><h3>List&lt;T&gt;</h3><p>Add/Remove/AddRange/Find/Sort/Clear/ToArray</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',11)"><span class="ov-num">12</span><h3>Metodi</h3><p>Parametri, return, overload, ref/out, ricorsione</p></div>
+    <div class="ov-card m1" onclick="showTopic('mod1',12)"><span class="ov-num">13</span><h3>Struct</h3><p>Tipo valore, dati semplici raggruppati</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',0)"><span class="ov-num">01</span><h3>Classi &amp; Oggetti</h3><p>Blueprint, istanza, new</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',1)"><span class="ov-num">02</span><h3>Costruttori</h3><p>Inizializzazione automatica con new</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',2)"><span class="ov-num">03</span><h3>Proprietà</h3><p>get/set, auto-property, validazione</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',3)"><span class="ov-num">04</span><h3>Incapsulamento</h3><p>public, private, protected, internal</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',4)"><span class="ov-num">05</span><h3>Ereditarietà</h3><p>class Figlia : Padre, base, override</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',5)"><span class="ov-num">06</span><h3>Interfacce</h3><p>Contratto, implementazione multipla</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',6)"><span class="ov-num">07</span><h3>Polimorfismo</h3><p>virtual, override, abstract, sealed</p></div>
+    <div class="ov-card m2" onclick="showTopic('mod2',7)"><span class="ov-num">08</span><h3>Eccezioni</h3><p>try/catch/finally, throw, custom exceptions</p></div>
+    <div class="ov-card m3" onclick="showTopic('mod3',0)"><span class="ov-num">01</span><h3>File di Testo</h3><p>ReadAllText, WriteAllText, AppendAllText</p></div>
+    <div class="ov-card m3" onclick="showTopic('mod3',1)"><span class="ov-num">02</span><h3>Stream</h3><p>StreamReader, StreamWriter, using</p></div>
+    <div class="ov-card m3" onclick="showTopic('mod3',2)"><span class="ov-num">03</span><h3>JSON</h3><p>JsonSerializer.Serialize / Deserialize</p></div>
+    <div class="ov-card m3" onclick="showTopic('mod3',3)"><span class="ov-num">04</span><h3>XML</h3><p>XmlSerializer, XDocument</p></div>
+    <div class="ov-card m3" onclick="showTopic('mod3',4)"><span class="ov-num">05</span><h3>Eccezioni I/O</h3><p>FileNotFoundException, IOException</p></div>
+  </div>
+</div>
+
+<!-- MOD I -->
+<div class="section" id="section-mod1">
+  <div class="section-title">Modulo I — Basi del C# <span class="tag tag-mod1">MOD 1</span></div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Tipi di Dato</h3><div class="topic-sub">int, double, string, bool, char, var, const, casting</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Una <strong>variabile</strong> è un contenitore con un nome che conserva un valore in memoria.</p>
+      <h4>Interi (senza decimali)</h4>
+      <table><tr><th>Tipo</th><th>Bit</th><th>Range</th><th>Usalo quando</th></tr>
+        <tr><td>byte</td><td>8</td><td>0 – 255</td><td>Numeri piccoli positivi</td></tr>
+        <tr><td>short</td><td>16</td><td>±32.767</td><td>Numeri piccoli</td></tr>
+        <tr><td>int</td><td>32</td><td>±2 miliardi</td><td>✅ Uso generale</td></tr>
+        <tr><td>long</td><td>64</td><td>±9 quintilioni</td><td>Numeri enormi (aggiungi L)</td></tr>
+      </table>
+      <h4>Decimali</h4>
+      <pre><span class="ty">float</span>   temp  = <span class="num">36.6f</span>;    <span class="cm">// ~7 cifre, richiede 'f'</span>
+<span class="ty">double</span>  h     = <span class="num">1.75</span>;     <span class="cm">// ~15 cifre, default per decimali</span>
+<span class="ty">decimal</span> price = <span class="num">9.99m</span>;   <span class="cm">// ~28 cifre, usa SEMPRE per i soldi</span></pre>
+      <h4>Altri tipi</h4>
+      <pre><span class="ty">char</span>   c    = <span class="str">'A'</span>;           <span class="cm">// singolo carattere (virgolette singole)</span>
+<span class="ty">string</span> nome  = <span class="str">"Marco"</span>;      <span class="cm">// testo (virgolette doppie)</span>
+<span class="ty">bool</span>   ok    = <span class="kw">true</span>;         <span class="cm">// solo true o false</span>
+<span class="kw">var</span>    n     = <span class="num">42</span>;            <span class="cm">// C# deduce il tipo automaticamente</span>
+<span class="kw">const</span> <span class="ty">double</span> PI = <span class="num">3.14159</span>;   <span class="cm">// costante, mai modificabile</span></pre>
+      <h4>Type Casting</h4>
+      <pre><span class="cm">// Implicita (sicura):</span>
+<span class="ty">int</span> n = <span class="num">10</span>;
+<span class="ty">double</span> d = n;          <span class="cm">// int → double, automatico</span>
+
+<span class="cm">// Esplicita (puoi perdere dati!):</span>
+<span class="ty">double</span> d = <span class="num">9.99</span>;
+<span class="ty">int</span> i = (<span class="ty">int</span>)d;        <span class="cm">// i = 9, il decimale è perso!</span>
+
+<span class="cm">// Da stringa a numero:</span>
+<span class="ty">int</span> n = <span class="ty">int</span>.<span class="fn">Parse</span>(<span class="str">"42"</span>);
+<span class="ty">int</span> n = Convert.<span class="fn">ToInt32</span>(<span class="str">"42"</span>);</pre>
+      <div class="warn">⚠ Per i soldi usa SEMPRE decimal — float e double hanno errori di arrotondamento!</div>
+      <h4>Nullable Types &amp; Operatori Null</h4>
+      <pre><span class="cm">// Tipo nullable: può contenere null</span>
+<span class="ty">int</span>? eta = <span class="kw">null</span>;
+<span class="ty">string</span>? nome = <span class="kw">null</span>;
+
+<span class="cm">// ?? (null coalescing) — valore di default se null:</span>
+<span class="ty">int</span> valore = eta ?? <span class="num">0</span>;              <span class="cm">// 0 se eta è null</span>
+<span class="ty">string</span> n = nome ?? <span class="str">"Sconosciuto"</span>;  <span class="cm">// "Sconosciuto" se null</span>
+
+<span class="cm">// ?. (null conditional) — evita NullReferenceException:</span>
+<span class="ty">int</span>? lunghezza = nome?.Length;  <span class="cm">// null se nome è null</span>
+
+<span class="cm">// Controllare se ha valore:</span>
+<span class="kw">if</span> (eta.HasValue) Console.<span class="fn">WriteLine</span>(eta.Value);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. Input / Output &amp; Stringhe</h3><div class="topic-sub">Console.WriteLine, ReadLine, interpolazione $"", metodi stringa</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <h4>Output</h4>
+      <pre>Console.<span class="fn">WriteLine</span>(<span class="str">"Ciao!"</span>);       <span class="cm">// stampa e va a capo</span>
+Console.<span class="fn">Write</span>(<span class="str">"Ciao "</span>);          <span class="cm">// stampa SENZA andare a capo</span>
+
+<span class="cm">// String Interpolation (modo moderno e preferito):</span>
+<span class="ty">string</span> nome = <span class="str">"Marco"</span>; <span class="ty">int</span> eta = <span class="num">25</span>;
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Nome: {nome}, Età: {eta}"</span>);
+
+<span class="cm">// Formattazione numeri:</span>
+<span class="ty">double</span> p = <span class="num">1234.56</span>;
+Console.<span class="fn">WriteLine</span>(p.<span class="fn">ToString</span>(<span class="str">"F2"</span>));   <span class="cm">// 1234,56</span>
+Console.<span class="fn">WriteLine</span>(p.<span class="fn">ToString</span>(<span class="str">"C"</span>));    <span class="cm">// €1.234,56</span></pre>
+      <h4>Input</h4>
+      <pre><span class="ty">string</span> nome = Console.<span class="fn">ReadLine</span>();
+<span class="ty">int</span> eta = <span class="ty">int</span>.<span class="fn">Parse</span>(Console.<span class="fn">ReadLine</span>());
+
+<span class="cm">// Modo sicuro con TryParse:</span>
+<span class="ty">int</span> numero;
+<span class="kw">if</span> (<span class="ty">int</span>.<span class="fn">TryParse</span>(Console.<span class="fn">ReadLine</span>(), <span class="kw">out</span> numero))
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Inserito: {numero}"</span>);
+<span class="kw">else</span>
+    Console.<span class="fn">WriteLine</span>(<span class="str">"Non è un numero valido!"</span>);</pre>
+      <h4>Metodi Utili Stringa</h4>
+      <pre><span class="ty">string</span> s = <span class="str">" Ciao Mondo "</span>;
+s.Length              <span class="cm">// 12</span>
+s.<span class="fn">ToUpper</span>()           <span class="cm">// " CIAO MONDO "</span>
+s.<span class="fn">ToLower</span>()           <span class="cm">// " ciao mondo "</span>
+s.<span class="fn">Trim</span>()              <span class="cm">// "Ciao Mondo" (rimuove spazi)</span>
+s.<span class="fn">Replace</span>(<span class="str">"Mondo"</span>,<span class="str">"Italia"</span>) <span class="cm">// " Ciao Italia "</span>
+s.<span class="fn">Contains</span>(<span class="str">"Ciao"</span>)   <span class="cm">// true</span>
+s.<span class="fn">Substring</span>(<span class="num">1</span>, <span class="num">4</span>)    <span class="cm">// "Ciao" — da indice 1, 4 caratteri</span>
+s.<span class="fn">IndexOf</span>(<span class="str">"Mondo"</span>)   <span class="cm">// posizione della parola</span>
+s.<span class="fn">Split</span>(<span class="str">' '</span>)         <span class="cm">// divide in array per spazio</span>
+s.<span class="fn">StartsWith</span>(<span class="str">"Ci"</span>)  <span class="cm">// true</span>
+s.<span class="fn">EndsWith</span>(<span class="str">"do"</span>)   <span class="cm">// true</span>
+s.<span class="fn">PadLeft</span>(<span class="num">15</span>)       <span class="cm">// aggiunge spazi a sinistra fino a 15 char</span>
+s.<span class="fn">PadRight</span>(<span class="num">15</span>, <span class="str">'*'</span>) <span class="cm">// aggiunge '*' a destra fino a 15 char</span>
+<span class="ty">string</span>.<span class="fn">IsNullOrEmpty</span>(s)      <span class="cm">// true se null o ""</span>
+<span class="ty">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(s)  <span class="cm">// true se null, "" o solo spazi</span>
+<span class="ty">string</span>.<span class="fn">Join</span>(<span class="str">", "</span>, nomiArray) <span class="cm">// unisce array: "Luca, Marco"</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. Calcoli Aritmetici</h3><div class="topic-sub">+, -, *, /, %, operatori composti, Math library</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="ty">int</span> a = <span class="num">10</span>, b = <span class="num">3</span>;
+a + b    <span class="cm">// 13</span>
+a - b    <span class="cm">// 7</span>
+a * b    <span class="cm">// 30</span>
+a / b    <span class="cm">// 3  ← int/int = int! Tronca il decimale</span>
+a % b    <span class="cm">// 1  ← resto della divisione (modulo)</span></pre>
+      <div class="warn">⚠ 10/3 = 3, NON 3.33! Per decimali: (double)10 / 3 oppure 10.0 / 3</div>
+      <h4>Operatori Composti</h4>
+      <pre>n += <span class="num">5</span>;   <span class="cm">// n = n + 5</span>
+n -= <span class="num">3</span>;   <span class="cm">// n = n - 3</span>
+n *= <span class="num">2</span>;   <span class="cm">// n = n * 2</span>
+n /= <span class="num">4</span>;   <span class="cm">// n = n / 4</span>
+n++;      <span class="cm">// post-incremento (usa poi aggiunge)</span>
+++n;      <span class="cm">// pre-incremento (aggiunge poi usa)</span></pre>
+      <h4>Libreria Math</h4>
+      <pre>Math.<span class="fn">Abs</span>(-<span class="num">5</span>)         <span class="cm">// 5 (valore assoluto)</span>
+Math.<span class="fn">Sqrt</span>(<span class="num">16</span>)       <span class="cm">// 4.0 (radice quadrata)</span>
+Math.<span class="fn">Pow</span>(<span class="num">2</span>, <span class="num">10</span>)     <span class="cm">// 1024.0 (potenza)</span>
+Math.<span class="fn">Round</span>(<span class="num">3.567</span>, <span class="num">2</span>) <span class="cm">// 3.57</span>
+Math.<span class="fn">Max</span>(<span class="num">10</span>, <span class="num">20</span>)    <span class="cm">// 20</span>
+Math.<span class="fn">Min</span>(<span class="num">10</span>, <span class="num">20</span>)    <span class="cm">// 10</span>
+Math.PI              <span class="cm">// 3.14159...</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4 &amp; 5. Operatori di Confronto &amp; Booleani</h3><div class="topic-sub">==, !=, &gt;, &lt;, &amp;&amp;, ||, !, ternario</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <h4>Confronto (restituiscono true/false)</h4>
+      <pre>a == b   <span class="cm">// uguale</span>
+a != b   <span class="cm">// diverso</span>
+a > b    <span class="cm">// maggiore</span>
+a < b    <span class="cm">// minore</span>
+a >= b   <span class="cm">// maggiore o uguale</span>
+a <= b   <span class="cm">// minore o uguale</span></pre>
+      <div class="warn">⚠ Non confondere = (assegna valore) con == (confronta)!</div>
+      <h4>Logici</h4>
+      <pre><span class="cm">// AND — vero solo se ENTRAMBI sono veri:</span>
+<span class="kw">if</span> (eta >= <span class="num">18</span> && haDocumento) ...
+
+<span class="cm">// OR — vero se almeno UNO è vero:</span>
+<span class="kw">if</span> (haCarta || haContanti) ...
+
+<span class="cm">// NOT — inverte il booleano:</span>
+<span class="kw">if</span> (!connesso) Console.<span class="fn">WriteLine</span>(<span class="str">"Offline"</span>);
+
+<span class="cm">// Ternario — if/else in una riga:</span>
+<span class="ty">string</span> r = eta >= <span class="num">18</span> ? <span class="str">"Adulto"</span> : <span class="str">"Minore"</span>;</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Strutture di Controllo</h3><div class="topic-sub">if/else if/else, switch, switch expression</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">if</span> (voto >= <span class="num">90</span>)      Console.<span class="fn">WriteLine</span>(<span class="str">"Ottimo!"</span>);
+<span class="kw">else if</span> (voto >= <span class="num">75</span>) Console.<span class="fn">WriteLine</span>(<span class="str">"Buono"</span>);
+<span class="kw">else</span>                  Console.<span class="fn">WriteLine</span>(<span class="str">"Sufficiente"</span>);</pre>
+      <h4>Switch classico</h4>
+      <pre><span class="kw">switch</span> (giorno) {
+    <span class="kw">case</span> <span class="num">1</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Lunedì"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">6</span>:
+    <span class="kw">case</span> <span class="num">7</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Weekend!"</span>); <span class="kw">break</span>; <span class="cm">// più case, stesso blocco</span>
+    <span class="kw">default</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Altro"</span>); <span class="kw">break</span>;
+}</pre>
+      <h4>Switch Expression (C# 8+, moderno)</h4>
+      <pre><span class="ty">string</span> nome = giorno <span class="kw">switch</span> {
+    <span class="num">1</span> => <span class="str">"Lunedì"</span>,
+    <span class="num">2</span> => <span class="str">"Martedì"</span>,
+    _ => <span class="str">"Altro"</span>    <span class="cm">// _ = default</span>
+};</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7, 8, 9. I Tre Cicli</h3><div class="topic-sub">for, while, do while — differenze e quando usarli</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <table>
+        <tr><th>Ciclo</th><th>Condizione verificata</th><th>Esecuzioni min.</th><th>Usalo per</th></tr>
+        <tr><td>for</td><td>Prima</td><td>0</td><td>Quando sai quante volte</td></tr>
+        <tr><td>while</td><td>Prima</td><td>0</td><td>Quando NON sai quante volte</td></tr>
+        <tr><td>do while</td><td>Dopo</td><td>1</td><td>Almeno 1 esecuzione (menù!)</td></tr>
+      </table>
+      <h4>for</h4>
+      <pre><span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i < <span class="num">5</span>; i++)
+    Console.<span class="fn">WriteLine</span>(i);   <span class="cm">// 0 1 2 3 4</span>
+
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i < <span class="num">10</span>; i++) {
+    <span class="kw">if</span> (i == <span class="num">3</span>) <span class="kw">continue</span>;   <span class="cm">// salta il 3</span>
+    <span class="kw">if</span> (i == <span class="num">7</span>) <span class="kw">break</span>;      <span class="cm">// esce al 7</span>
+    Console.<span class="fn">Write</span>(i + <span class="str">" "</span>); <span class="cm">// 0 1 2 4 5 6</span>
+}</pre>
+      <h4>while</h4>
+      <pre><span class="ty">int</span> i = <span class="num">0</span>;
+<span class="kw">while</span> (i < <span class="num">5</span>) {
+    Console.<span class="fn">WriteLine</span>(i);
+    i++;   <span class="cm">// FONDAMENTALE: senza questo è un loop infinito!</span>
+}</pre>
+      <h4>do while</h4>
+      <pre><span class="ty">string</span> scelta;
+<span class="kw">do</span> {
+    Console.<span class="fn">WriteLine</span>(<span class="str">"1. Gioca  0. Esci"</span>);
+    scelta = Console.<span class="fn">ReadLine</span>();
+} <span class="kw">while</span> (scelta != <span class="str">"0"</span>);   <span class="cm">// perfetto per menù</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>10 &amp; 11. Array e List&lt;T&gt;</h3><div class="topic-sub">Array fisso, foreach, Array 2D, List dinamica</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <div class="note">⚠ L'indice parte sempre da 0, non da 1!</div>
+      <h4>Array (dimensione fissa)</h4>
+      <pre><span class="ty">int</span>[] numeri = { <span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span> };
+Console.<span class="fn">WriteLine</span>(numeri[<span class="num">0</span>]);     <span class="cm">// 10</span>
+Console.<span class="fn">WriteLine</span>(numeri.Length);  <span class="cm">// 5</span>
+
+<span class="cm">// foreach — legge tutti gli elementi:</span>
+<span class="kw">foreach</span> (<span class="ty">int</span> n <span class="kw">in</span> numeri)
+    Console.<span class="fn">WriteLine</span>(n);
+
+<span class="cm">// Metodi utili:</span>
+Array.<span class="fn">Sort</span>(numeri);
+Array.<span class="fn">Reverse</span>(numeri);
+<span class="ty">int</span> pos = Array.<span class="fn">IndexOf</span>(numeri, <span class="num">30</span>);</pre>
+      <h4>Array 2D e Jagged</h4>
+      <pre><span class="cm">// Array 2D (matrice):</span>
+<span class="ty">int</span>[,] griglia = { { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span> }, { <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span> } };
+Console.<span class="fn">WriteLine</span>(griglia[<span class="num">0</span>, <span class="num">1</span>]);         <span class="cm">// 2</span>
+Console.<span class="fn">WriteLine</span>(griglia.GetLength(<span class="num">0</span>)); <span class="cm">// 2 righe</span>
+Console.<span class="fn">WriteLine</span>(griglia.GetLength(<span class="num">1</span>)); <span class="cm">// 3 colonne</span>
+
+<span class="cm">// Jagged array (righe di lunghezza diversa):</span>
+<span class="ty">int</span>[][] jagged = <span class="kw">new</span> <span class="ty">int</span>[<span class="num">3</span>][];
+jagged[<span class="num">0</span>] = <span class="kw">new</span> <span class="ty">int</span>[] { <span class="num">1</span>, <span class="num">2</span> };
+jagged[<span class="num">1</span>] = <span class="kw">new</span> <span class="ty">int</span>[] { <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> };</pre>
+      <h4>List&lt;T&gt; (dimensione dinamica)</h4>
+      <pre>List&lt;<span class="ty">string</span>&gt; nomi = <span class="kw">new</span> List&lt;<span class="ty">string</span>&gt;();
+nomi.<span class="fn">Add</span>(<span class="str">"Marco"</span>);
+nomi.<span class="fn">Add</span>(<span class="str">"Giulia"</span>);
+nomi.<span class="fn">Insert</span>(<span class="num">1</span>, <span class="str">"Anna"</span>);   <span class="cm">// inserisce in posizione 1</span>
+Console.<span class="fn">WriteLine</span>(nomi.Count);    <span class="cm">// usa Count (non Length!)</span>
+nomi.<span class="fn">Remove</span>(<span class="str">"Marco"</span>);
+nomi.<span class="fn">RemoveAt</span>(<span class="num">0</span>);
+nomi.<span class="fn">Contains</span>(<span class="str">"Giulia"</span>);  <span class="cm">// true</span>
+
+<span class="cm">// Aggiungere più elementi in una volta:</span>
+<span class="ty">string</span>[] nuovi = { <span class="str">"Luca"</span>, <span class="str">"Sara"</span> };
+nomi.<span class="fn">AddRange</span>(nuovi);
+
+<span class="cm">// Cercare elementi:</span>
+<span class="ty">string</span> trovato = nomi.<span class="fn">Find</span>(n =&gt; n.<span class="fn">StartsWith</span>(<span class="str">"G"</span>));
+List&lt;<span class="ty">string</span>&gt; tutti = nomi.<span class="fn">FindAll</span>(n =&gt; n.Length &gt; <span class="num">4</span>);
+
+<span class="cm">// Posizione, ordinamento, pulizia:</span>
+<span class="ty">int</span> idx = nomi.<span class="fn">IndexOf</span>(<span class="str">"Giulia"</span>);
+nomi.<span class="fn">Sort</span>();
+nomi.<span class="fn">Reverse</span>();
+nomi.<span class="fn">Clear</span>();
+
+<span class="cm">// Convertire List a Array:</span>
+<span class="ty">string</span>[] arr = nomi.<span class="fn">ToArray</span>();</pre>
+      <table>
+        <tr><th></th><th>Array</th><th>List&lt;T&gt;</th></tr>
+        <tr><td>Dimensione</td><td>Fissa</td><td>Dinamica</td></tr>
+        <tr><td>Lunghezza</td><td>.Length</td><td>.Count</td></tr>
+        <tr><td>Aggiungere</td><td>Impossibile</td><td>.Add()</td></tr>
+        <tr><td>Rimuovere</td><td>Impossibile</td><td>.Remove()</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>12. I Metodi</h3><div class="topic-sub">Parametri, return, overload, ref/out, ricorsione</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Un metodo è un blocco di codice riutilizzabile con un nome.</p>
+      <pre><span class="cm">// void = non restituisce niente</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Saluta</span>(<span class="ty">string</span> nome) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciao, {nome}!"</span>);
+}
+
+<span class="cm">// return = restituisce un valore</span>
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">Somma</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) { <span class="kw">return</span> a + b; }
+
+<span class="cm">// Parametri opzionali (devono essere ultimi):</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Saluta</span>(<span class="ty">string</span> nome, <span class="ty">string</span> saluto = <span class="str">"Ciao"</span>) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{saluto}, {nome}!"</span>);
+}</pre>
+      <h4>Overloading — stesso nome, parametri diversi</h4>
+      <pre><span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>(<span class="ty">int</span> n)    { <span class="cm">/* ... */</span> }
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>(<span class="ty">string</span> s) { <span class="cm">/* ... */</span> }  <span class="cm">// C# sceglie il giusto</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>(<span class="ty">double</span> d) { <span class="cm">/* ... */</span> }</pre>
+      <h4>ref e out</h4>
+      <pre><span class="cm">// ref = modifica la variabile originale:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Raddoppia</span>(<span class="kw">ref</span> <span class="ty">int</span> n) { n *= <span class="num">2</span>; }
+<span class="ty">int</span> x = <span class="num">5</span>; <span class="fn">Raddoppia</span>(<span class="kw">ref</span> x);  <span class="cm">// x ora è 10</span>
+
+<span class="cm">// out = restituisce più valori:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MinMax</span>(<span class="ty">int</span>[] arr, <span class="kw">out</span> <span class="ty">int</span> min, <span class="kw">out</span> <span class="ty">int</span> max) { <span class="cm">/* ... */</span> }
+<span class="fn">MinMax</span>(numeri, <span class="kw">out int</span> minimo, <span class="kw">out int</span> massimo);</pre>
+      <h4>Ricorsione</h4>
+      <pre><span class="kw">static</span> <span class="ty">int</span> <span class="fn">Fattoriale</span>(<span class="ty">int</span> n) {
+    <span class="kw">if</span> (n <= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;          <span class="cm">// caso base — OBBLIGATORIO</span>
+    <span class="kw">return</span> n * <span class="fn">Fattoriale</span>(n - <span class="num">1</span>);  <span class="cm">// chiama se stessa</span>
+}
+<span class="fn">Fattoriale</span>(<span class="num">5</span>);  <span class="cm">// 5×4×3×2×1 = 120</span></pre>
+      <h4>params — numero variabile di argomenti</h4>
+      <pre><span class="kw">static</span> <span class="ty">int</span> <span class="fn">Somma</span>(<span class="kw">params</span> <span class="ty">int</span>[] numeri) {
+    <span class="ty">int</span> tot = <span class="num">0</span>;
+    <span class="kw">foreach</span> (<span class="ty">int</span> n <span class="kw">in</span> numeri) tot += n;
+    <span class="kw">return</span> tot;
+}
+<span class="fn">Somma</span>(<span class="num">1</span>, <span class="num">2</span>);           <span class="cm">// 3</span>
+<span class="fn">Somma</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>);  <span class="cm">// 15</span></pre>
+      <h4>Expression-bodied =&gt;</h4>
+      <pre><span class="kw">static</span> <span class="ty">int</span> <span class="fn">Quadrato</span>(<span class="ty">int</span> n) { <span class="kw">return</span> n * n; }  <span class="cm">// classico</span>
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">Quadrato</span>(<span class="ty">int</span> n) =&gt; n * n;             <span class="cm">// compatto</span>
+<span class="kw">static</span> <span class="kw">void</span> <span class="fn">Saluta</span>(<span class="ty">string</span> s) =&gt; Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciao {s}!"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>13. Le Strutture (struct)</h3><div class="topic-sub">Tipo valore, costruttori, metodi, struct vs class</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Una struct raggruppa variabili correlate. Ideale per dati semplici (Punto, Data, Prodotto).</p>
+      <pre><span class="kw">struct</span> Prodotto {
+    <span class="kw">public</span> <span class="ty">string</span> Nome;
+    <span class="kw">public</span> <span class="ty">double</span> Prezzo;
+    <span class="kw">public</span> <span class="ty">int</span>    Quantita;
+
+    <span class="kw">public</span> <span class="fn">Prodotto</span>(<span class="ty">string</span> nome, <span class="ty">double</span> prezzo, <span class="ty">int</span> qty) {
+        Nome = nome; Prezzo = prezzo; Quantita = qty;
+    }
+    <span class="kw">public</span> <span class="ty">double</span> <span class="fn">ValoreTotale</span>() => Prezzo * Quantita;
+}
+
+Prodotto p = <span class="kw">new</span> <span class="fn">Prodotto</span>(<span class="str">"Pizza"</span>, <span class="num">8.50</span>, <span class="num">10</span>);</pre>
+      <table>
+        <tr><th>Caratteristica</th><th>struct</th><th>class</th></tr>
+        <tr><td>Tipo</td><td>Valore (Stack)</td><td>Riferimento (Heap)</td></tr>
+        <tr><td>Ereditarietà</td><td>Non supportata</td><td>Supportata</td></tr>
+        <tr><td>Copia</td><td>Copia indipendente</td><td>Stesso riferimento</td></tr>
+        <tr><td>Usala per</td><td>Dati semplici</td><td>Oggetti complessi</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MOD II -->
+<div class="section" id="section-mod2">
+  <div class="section-title">Modulo II — OOP <span class="tag tag-mod2">MOD 2</span></div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Classi &amp; Oggetti</h3><div class="topic-sub">Blueprint, istanza, new, campi, metodi</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>La <strong>classe</strong> è lo schema. L'<strong>oggetto</strong> è un'istanza concreta creata con <code>new</code>.</p>
+      <pre><span class="kw">class</span> Persona {
+    <span class="kw">public</span> <span class="ty">string</span> Nome;
+    <span class="kw">public</span> <span class="ty">int</span> Eta;
+
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Saluta</span>() {
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciao, sono {Nome} e ho {Eta} anni."</span>);
+    }
+}
+
+Persona p = <span class="kw">new</span> Persona();
+p.Nome = <span class="str">"Marco"</span>;
+p.Eta = <span class="num">25</span>;
+p.<span class="fn">Saluta</span>();   <span class="cm">// Ciao, sono Marco e ho 25 anni.</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2 &amp; 3. Costruttori &amp; Proprietà</h3><div class="topic-sub">new, costruttore con parametri, get/set, auto-property</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Il costruttore ha lo stesso nome della classe, è chiamato automaticamente con <code>new</code> e serve ad inizializzare l'oggetto.</p>
+      <pre><span class="kw">class</span> Persona {
+    <span class="kw">private</span> <span class="ty">int</span> _eta;   <span class="cm">// campo privato (convenzione: underscore)</span>
+
+    <span class="kw">public</span> <span class="fn">Persona</span>(<span class="ty">string</span> nome, <span class="ty">int</span> eta) {   <span class="cm">// costruttore</span>
+        Nome = nome;
+        Eta = eta;
+    }
+
+    <span class="kw">public</span> <span class="ty">string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }  <span class="cm">// auto-property (sintassi breve)</span>
+
+    <span class="kw">public</span> <span class="ty">int</span> Eta {                    <span class="cm">// proprietà con validazione</span>
+        <span class="kw">get</span> { <span class="kw">return</span> _eta; }
+        <span class="kw">set</span> { <span class="kw">if</span> (value >= <span class="num">0</span>) _eta = value; }
+    }
+}
+
+Persona p = <span class="kw">new</span> <span class="fn">Persona</span>(<span class="str">"Marco"</span>, <span class="num">25</span>);
+p.Eta = -<span class="num">5</span>;  <span class="cm">// ignorato! rimane 25</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. Incapsulamento</h3><div class="topic-sub">public, private, protected, internal</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Nascondere i dettagli interni, esporre solo ciò che è necessario all'esterno.</p>
+      <table>
+        <tr><th>Modificatore</th><th>Accessibile da</th></tr>
+        <tr><td>public</td><td>Ovunque</td></tr>
+        <tr><td>private</td><td>Solo dentro la classe stessa</td></tr>
+        <tr><td>protected</td><td>Classe + classi figlie</td></tr>
+        <tr><td>internal</td><td>Solo dentro lo stesso progetto</td></tr>
+      </table>
+      <pre><span class="kw">class</span> ContoBancario {
+    <span class="kw">private</span> <span class="ty">double</span> _saldo;          <span class="cm">// nessuno può toccarlo direttamente</span>
+    <span class="kw">public</span> <span class="ty">double</span> Saldo => _saldo;  <span class="cm">// solo lettura dall'esterno</span>
+
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Deposita</span>(<span class="ty">double</span> importo) {
+        <span class="kw">if</span> (importo > <span class="num">0</span>) _saldo += importo;
+    }
+}
+<span class="cm">// conto._saldo = 9999;  // ERRORE! È private</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. Ereditarietà</h3><div class="topic-sub">class Figlia : Padre, base, virtual, override</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>La classe figlia eredita tutto dalla classe padre e può aggiungere o riscrivere comportamenti.</p>
+      <pre><span class="kw">class</span> Animale {
+    <span class="kw">public</span> <span class="ty">string</span> Nome;
+    <span class="kw">public</span> <span class="fn">Animale</span>(<span class="ty">string</span> nome) { Nome = nome; }
+
+    <span class="kw">public</span> <span class="kw">virtual</span> <span class="ty">void</span> <span class="fn">FaiVerso</span>() {    <span class="cm">// virtual = sovrascrivibile</span>
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"{Nome} fa un verso."</span>);
+    }
+}
+
+<span class="kw">class</span> Cane : Animale {                      <span class="cm">// eredita da Animale</span>
+    <span class="kw">public</span> <span class="fn">Cane</span>(<span class="ty">string</span> nome) : <span class="kw">base</span>(nome) { }  <span class="cm">// chiama costruttore padre</span>
+
+    <span class="kw">public</span> <span class="kw">override</span> <span class="ty">void</span> <span class="fn">FaiVerso</span>() {   <span class="cm">// override = riscrivi</span>
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"{Nome} dice: Bau!"</span>);
+    }
+}</pre>
+      <div class="warn">⚠ In C# si eredita da UNA SOLA classe padre (ereditarietà singola).</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Interfacce</h3><div class="topic-sub">interface, contratto COSA fare, implementazione multipla</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Un'interfaccia definisce COSA deve fare una classe, senza dire COME. Una classe può implementare più interfacce.</p>
+      <pre><span class="kw">interface</span> IVolante {
+    <span class="ty">void</span> <span class="fn">Decolla</span>();
+    <span class="ty">void</span> <span class="fn">Atterra</span>();
+}
+<span class="kw">interface</span> INuotante {
+    <span class="ty">void</span> <span class="fn">Nuota</span>();
+}
+
+<span class="cm">// Implementare PIÙ interfacce è permesso:</span>
+<span class="kw">class</span> Anatra : IVolante, INuotante {
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Decolla</span>() { Console.<span class="fn">WriteLine</span>(<span class="str">"Vola!"</span>); }
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Atterra</span>() { Console.<span class="fn">WriteLine</span>(<span class="str">"Atterra!"</span>); }
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Nuota</span>()   { Console.<span class="fn">WriteLine</span>(<span class="str">"Nuota!"</span>); }
+}</pre>
+      <table>
+        <tr><th></th><th>Interfaccia</th><th>Classe Astratta</th></tr>
+        <tr><td>Implementazione</td><td>Solo firme</td><td>Può avere codice</td></tr>
+        <tr><td>Quante puoi usare</td><td>Illimitate</td><td>Una sola</td></tr>
+        <tr><td>Campi (fields)</td><td>No</td><td>Sì</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7. Polimorfismo &amp; abstract</h3><div class="topic-sub">virtual, override, abstract, sealed — oggetti diversi, trattamento uniforme</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Il polimorfismo ti permette di trattare oggetti di tipo diverso in modo uniforme tramite il tipo base.</p>
+      <pre><span class="kw">abstract class</span> Forma {
+    <span class="kw">public abstract</span> <span class="ty">double</span> <span class="fn">Area</span>();  <span class="cm">// DEVE essere implementato dalle figlie</span>
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">StampaArea</span>() {
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"Area: {Area():F2}"</span>);
+    }
+}
+<span class="kw">class</span> Cerchio : Forma {
+    <span class="kw">public</span> <span class="ty">double</span> Raggio;
+    <span class="kw">public</span> <span class="fn">Cerchio</span>(<span class="ty">double</span> r) { Raggio = r; }
+    <span class="kw">public override</span> <span class="ty">double</span> <span class="fn">Area</span>() => Math.PI * Raggio * Raggio;
+}
+
+<span class="cm">// POLIMORFISMO: array di Forma, oggetti diversi dentro:</span>
+Forma[] forme = { <span class="kw">new</span> <span class="fn">Cerchio</span>(<span class="num">5</span>), <span class="kw">new</span> <span class="fn">Rettangolo</span>(<span class="num">4</span>,<span class="num">6</span>) };
+<span class="kw">foreach</span> (Forma f <span class="kw">in</span> forme)
+    f.<span class="fn">StampaArea</span>();  <span class="cm">// chiama il metodo giusto per ogni tipo!</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>8. Gestione delle Eccezioni</h3><div class="topic-sub">try/catch/finally, throw, eccezioni personalizzate</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Un'eccezione è un errore a runtime. Senza gestione il programma crasha.</p>
+      <pre><span class="kw">try</span> {
+    <span class="ty">int</span> n = <span class="ty">int</span>.<span class="fn">Parse</span>(Console.<span class="fn">ReadLine</span>());
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Numero: {n}"</span>);
+}
+<span class="kw">catch</span> (FormatException ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Formato errato: {ex.Message}"</span>);
+}
+<span class="kw">catch</span> (Exception ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Errore generico: {ex.Message}"</span>);
+}
+<span class="kw">finally</span> {
+    Console.<span class="fn">WriteLine</span>(<span class="str">"Eseguito SEMPRE, con o senza errore"</span>);
+}</pre>
+      <table>
+        <tr><th>Eccezione</th><th>Causa</th></tr>
+        <tr><td>FormatException</td><td>int.Parse("abc")</td></tr>
+        <tr><td>NullReferenceException</td><td>Accesso a oggetto null</td></tr>
+        <tr><td>IndexOutOfRangeException</td><td>Indice array fuori limiti</td></tr>
+        <tr><td>DivideByZeroException</td><td>Divisione per zero</td></tr>
+        <tr><td>OverflowException</td><td>Valore fuori range del tipo</td></tr>
+      </table>
+      <h4>Lanciare eccezioni (throw)</h4>
+      <pre><span class="kw">if</span> (importo <= <span class="num">0</span>)
+    <span class="kw">throw new</span> <span class="fn">ArgumentException</span>(<span class="str">"L'importo deve essere positivo!"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>9. Static &amp; Object Initializer</h3><div class="topic-sub">static class, static member, this, object initializer</div></div><span class="arrow">&#9660;</span></div>
+    <div class="topic-body">
+      <p>Un membro <code>static</code> appartiene alla <strong>classe</strong>, non all'istanza. Si usa senza creare un oggetto con <code>new</code>.</p>
+      <pre><span class="kw">static</span> <span class="kw">class</span> Matematica {
+    <span class="kw">public</span> <span class="kw">static</span> <span class="ty">double</span> PI = <span class="num">3.14159</span>;
+    <span class="kw">public</span> <span class="kw">static</span> <span class="ty">int</span> <span class="fn">Quadrato</span>(<span class="ty">int</span> n) =&gt; n * n;
+}
+Matematica.PI;                    <span class="cm">// accesso diretto</span>
+Matematica.<span class="fn">Quadrato</span>(<span class="num">5</span>);         <span class="cm">// 25</span></pre>
+      <h4>Object Initializer</h4>
+      <pre><span class="cm">// Inizializzare più proprietà in una riga:</span>
+Persona p = <span class="kw">new</span> Persona { Nome = <span class="str">"Marco"</span>, Eta = <span class="num">25</span> };</pre>
+      <h4>this</h4>
+      <pre><span class="kw">class</span> Persona {
+    <span class="kw">private</span> <span class="ty">string</span> nome;
+    <span class="kw">public</span> <span class="fn">Persona</span>(<span class="ty">string</span> nome) {
+        <span class="kw">this</span>.nome = nome;  <span class="cm">// this.nome = campo, nome = parametro</span>
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- MOD III -->
+<div class="section" id="section-mod3">
+  <div class="section-title">Modulo III — File &amp; Dati <span class="tag tag-mod3">MOD 3</span></div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. File di Testo (classe File)</h3><div class="topic-sub">ReadAllText, WriteAllText, AppendAllText, Exists, Delete</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.IO;
+
+<span class="cm">// Scrittura (sovrascrive o crea):</span>
+File.<span class="fn">WriteAllText</span>(<span class="str">"note.txt"</span>, <span class="str">"Ciao Mondo!"</span>);
+<span class="ty">string</span>[] righe = { <span class="str">"Riga 1"</span>, <span class="str">"Riga 2"</span> };
+File.<span class="fn">WriteAllLines</span>(<span class="str">"note.txt"</span>, righe);
+
+<span class="cm">// Lettura:</span>
+<span class="ty">string</span> tutto = File.<span class="fn">ReadAllText</span>(<span class="str">"note.txt"</span>);
+<span class="ty">string</span>[] letto = File.<span class="fn">ReadAllLines</span>(<span class="str">"note.txt"</span>);
+
+<span class="cm">// Aggiungere in fondo:</span>
+File.<span class="fn">AppendAllText</span>(<span class="str">"note.txt"</span>, <span class="str">"\nNuova riga"</span>);
+
+<span class="cm">// Controllo ed eliminazione:</span>
+<span class="kw">if</span> (File.<span class="fn">Exists</span>(<span class="str">"note.txt"</span>)) File.<span class="fn">Delete</span>(<span class="str">"note.txt"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. StreamReader &amp; StreamWriter</h3><div class="topic-sub">Lettura/scrittura efficiente riga per riga, using, append</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Meglio per file grandi. Il blocco <code>using</code> chiude automaticamente lo stream.</p>
+      <pre><span class="cm">// Scrittura:</span>
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> <span class="fn">StreamWriter</span>(<span class="str">"dati.txt"</span>)) {
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Prima riga"</span>);
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Seconda riga"</span>);
+}  <span class="cm">// chiuso automaticamente</span>
+
+<span class="cm">// Lettura riga per riga:</span>
+<span class="kw">using</span> (StreamReader sr = <span class="kw">new</span> <span class="fn">StreamReader</span>(<span class="str">"dati.txt"</span>)) {
+    <span class="ty">string</span> riga;
+    <span class="kw">while</span> ((riga = sr.<span class="fn">ReadLine</span>()) != <span class="kw">null</span>)
+        Console.<span class="fn">WriteLine</span>(riga);
+}
+
+<span class="cm">// Append (aggiungere in fondo):</span>
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> <span class="fn">StreamWriter</span>(<span class="str">"dati.txt"</span>, append: <span class="kw">true</span>))
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Riga aggiunta"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. JSON — System.Text.Json</h3><div class="topic-sub">Serialize, Deserialize, salva su file</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>JSON è il formato standard per salvare e scambiare dati strutturati.</p>
+      <pre><span class="kw">using</span> System.Text.Json;
+
+<span class="kw">class</span> Studente {
+    <span class="kw">public</span> <span class="ty">string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="ty">int</span>    Eta  { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cm">// Oggetto → JSON (serializzazione):</span>
+Studente s = <span class="kw">new</span> Studente { Nome = <span class="str">"Marco"</span>, Eta = <span class="num">20</span> };
+<span class="ty">string</span> json = JsonSerializer.<span class="fn">Serialize</span>(s);
+<span class="cm">// {"Nome":"Marco","Eta":20}</span>
+
+<span class="cm">// Salva su file:</span>
+File.<span class="fn">WriteAllText</span>(<span class="str">"studente.json"</span>, json);
+
+<span class="cm">// JSON → Oggetto (deserializzazione):</span>
+<span class="ty">string</span> raw = File.<span class="fn">ReadAllText</span>(<span class="str">"studente.json"</span>);
+Studente letto = JsonSerializer.<span class="fn">Deserialize</span>&lt;Studente&gt;(raw);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. XML — XmlSerializer</h3><div class="topic-sub">Serializza/deserializza oggetti in XML</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.Xml.Serialization;
+
+[Serializable]
+<span class="kw">public class</span> Prodotto {
+    <span class="kw">public</span> <span class="ty">string</span> Nome   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="ty">double</span> Prezzo { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+XmlSerializer ser = <span class="kw">new</span> <span class="fn">XmlSerializer</span>(<span class="kw">typeof</span>(Prodotto));
+
+<span class="cm">// Salva in XML:</span>
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> <span class="fn">StreamWriter</span>(<span class="str">"p.xml"</span>))
+    ser.<span class="fn">Serialize</span>(sw, <span class="kw">new</span> Prodotto { Nome=<span class="str">"Laptop"</span>, Prezzo=<span class="num">999</span> });
+
+<span class="cm">// Carica da XML:</span>
+<span class="kw">using</span> (StreamReader sr = <span class="kw">new</span> <span class="fn">StreamReader</span>(<span class="str">"p.xml"</span>))
+    Prodotto p = (Prodotto)ser.<span class="fn">Deserialize</span>(sr);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. Eccezioni I/O</h3><div class="topic-sub">FileNotFoundException, IOException, pattern using + try/catch</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <table>
+        <tr><th>Eccezione</th><th>Causa</th></tr>
+        <tr><td>FileNotFoundException</td><td>Il file non esiste</td></tr>
+        <tr><td>DirectoryNotFoundException</td><td>La cartella non esiste</td></tr>
+        <tr><td>IOException</td><td>Errore generico (disco pieno, in uso)</td></tr>
+        <tr><td>UnauthorizedAccessException</td><td>Permessi insufficienti</td></tr>
+      </table>
+      <h4>Pattern raccomandato</h4>
+      <pre><span class="kw">try</span> {
+    <span class="kw">using</span> (StreamReader sr = <span class="kw">new</span> <span class="fn">StreamReader</span>(<span class="str">"input.txt"</span>))
+    <span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> <span class="fn">StreamWriter</span>(<span class="str">"output.txt"</span>)) {
+        <span class="ty">string</span> riga;
+        <span class="kw">while</span> ((riga = sr.<span class="fn">ReadLine</span>()) != <span class="kw">null</span>)
+            sw.<span class="fn">WriteLine</span>(riga.<span class="fn">ToUpper</span>());
+    }
+}
+<span class="kw">catch</span> (FileNotFoundException ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Non trovato: {ex.FileName}"</span>);
+}
+<span class="kw">catch</span> (IOException ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Errore I/O: {ex.Message}"</span>);
+}</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Dictionary&lt;K, V&gt;</h3><div class="topic-sub">Coppie chiave-valore, ContainsKey, TryGetValue, iterazione</div></div><span class="arrow">&#9660;</span></div>
+    <div class="topic-body">
+      <p>Un Dictionary mappa ogni <strong>chiave</strong> a un <strong>valore</strong>. Le chiavi sono uniche. E' la struttura dati più usata per accesso rapido per nome.</p>
+      <pre>Dictionary&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; eta = <span class="kw">new</span>() {
+    { <span class="str">"Marco"</span>, <span class="num">25</span> },
+    { <span class="str">"Giulia"</span>, <span class="num">30</span> }
+};
+
+eta[<span class="str">"Luca"</span>] = <span class="num">22</span>;    <span class="cm">// aggiunge</span>
+eta[<span class="str">"Marco"</span>] = <span class="num">26</span>;  <span class="cm">// modifica</span>
+
+Console.<span class="fn">WriteLine</span>(eta[<span class="str">"Giulia"</span>]);  <span class="cm">// 30</span>
+
+<span class="cm">// Accesso sicuro:</span>
+<span class="kw">if</span> (eta.<span class="fn">ContainsKey</span>(<span class="str">"Sara"</span>))
+    Console.<span class="fn">WriteLine</span>(eta[<span class="str">"Sara"</span>]);
+
+<span class="ty">int</span> v;
+<span class="kw">if</span> (eta.<span class="fn">TryGetValue</span>(<span class="str">"Marco"</span>, <span class="kw">out</span> v))
+    Console.<span class="fn">WriteLine</span>(v);
+
+eta.<span class="fn">Remove</span>(<span class="str">"Luca"</span>);
+
+<span class="cm">// Iterare:</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> eta)
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{item.Key} ha {item.Value} anni"</span>);</pre>
+      <table>
+        <tr><th></th><th>List&lt;T&gt;</th><th>Dictionary&lt;K,V&gt;</th></tr>
+        <tr><td>Accesso</td><td>Per indice [0]</td><td>Per chiave ["nome"]</td></tr>
+        <tr><td>Duplicati</td><td>Ammessi</td><td>Chiavi uniche</td></tr>
+        <tr><td>Usalo per</td><td>Liste ordinate</td><td>Ricerca per nome</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7. Classe Path</h3><div class="topic-sub">Path.Combine, GetFileName, GetExtension, GetDirectoryName</div></div><span class="arrow">&#9660;</span></div>
+    <div class="topic-body">
+      <p>La classe <code>Path</code> offre metodi per lavorare con percorsi di file senza concatenare stringhe manualmente.</p>
+      <pre><span class="kw">using</span> System.IO;
+
+<span class="ty">string</span> path = Path.<span class="fn">Combine</span>(<span class="str">"C:\\Users"</span>, <span class="str">"Marco"</span>, <span class="str">"doc.txt"</span>);
+<span class="cm">// C:\Users\Marco\doc.txt</span>
+
+Path.<span class="fn">GetFileName</span>(path);                <span class="cm">// "doc.txt"</span>
+Path.<span class="fn">GetFileNameWithoutExtension</span>(path); <span class="cm">// "doc"</span>
+Path.<span class="fn">GetExtension</span>(path);               <span class="cm">// ".txt"</span>
+Path.<span class="fn">GetDirectoryName</span>(path);           <span class="cm">// "C:\Users\Marco"</span>
+Path.<span class="fn">GetFullPath</span>(<span class="str">"note.txt"</span>);          <span class="cm">// percorso assoluto</span>
+Path.<span class="fn">GetTempPath</span>();                    <span class="cm">// cartella temp sistema</span></pre>
+      <div class="note">&#128161; Usa sempre <code>Path.Combine</code> invece di concatenare con \ &mdash; funziona su Windows, Mac e Linux.</div>
+    </div>
+  </div>
+</div>
+
+
+</div><!-- /main -->
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  if (btn) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+function toggle(card) { card.classList.toggle('open'); }
+function showTopic(moduleId, idx) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + moduleId).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const order = ['overview','mod1','mod2','mod3'];
+  document.querySelectorAll('.nav-btn')[order.indexOf(moduleId)].classList.add('active');
+  const cards = document.querySelectorAll('#section-' + moduleId + ' .topic-card');
+  cards.forEach(c => c.classList.remove('open'));
+  if (cards[idx]) {
+    cards[idx].classList.add('open');
+    setTimeout(() => cards[idx].scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+const MODULE_LABELS = { mod1: 'Mod I — Basi', mod2: 'Mod II — OOP', mod3: 'Mod III — File' };
+
+function buildIndex() {
+  const index = [];
+  ['mod1','mod2','mod3'].forEach(modId => {
+    const cards = document.querySelectorAll('#section-' + modId + ' .topic-card');
+    cards.forEach((card, idx) => {
+      const title = card.querySelector('h3')?.innerText || '';
+      const sub   = card.querySelector('.topic-sub')?.innerText || '';
+      const body  = card.querySelector('.topic-body')?.innerText || '';
+      index.push({ modId, idx, title, sub, text: (title + ' ' + sub + ' ' + body).toLowerCase(), displayText: body.trim() });
+    });
+  });
+  return index;
+}
+
+let _index = null;
+function getIndex() { return _index || (_index = buildIndex()); }
+
+function highlight(str, query) {
+  const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return str.replace(re, '<span class="sr-highlight">$1</span>');
+}
+
+function getSnippet(bodyText, query) {
+  const lower = bodyText.toLowerCase();
+  const pos = lower.indexOf(query.toLowerCase());
+  if (pos === -1) return bodyText.slice(0, 60) + '…';
+  const start = Math.max(0, pos - 20);
+  const end   = Math.min(bodyText.length, pos + query.length + 40);
+  return (start > 0 ? '…' : '') + bodyText.slice(start, end) + (end < bodyText.length ? '…' : '');
+}
+
+function onSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  const clearBtn = document.getElementById('searchClear');
+  clearBtn.style.display = query ? 'block' : 'none';
+  if (!query) { closeResults(); return; }
+  openResults();
+
+  const results = getIndex().filter(item => item.text.includes(query.toLowerCase()));
+  const box = document.getElementById('searchResults');
+
+  if (results.length === 0) {
+    box.innerHTML = '<div class="sr-empty">Nessun risultato per "<b>' + query + '</b>"</div>';
+    return;
+  }
+
+  box.innerHTML = results.map(r => {
+    const snippet = getSnippet(r.displayText, query);
+    return `<div class="sr-item" onclick="goToResult('${r.modId}', ${r.idx})">
+      <div class="sr-mod">${MODULE_LABELS[r.modId]}</div>
+      <div class="sr-title">${highlight(r.title, query)}</div>
+      <div class="sr-snippet">${highlight(snippet, query)}</div>
+    </div>`;
+  }).join('');
+}
+
+function goToResult(modId, idx) {
+  clearSearch();
+  showTopic(modId, idx);
+}
+
+function openResults() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (q) document.getElementById('searchResults').classList.add('open');
+}
+
+function closeResults() {
+  document.getElementById('searchResults').classList.remove('open');
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  closeResults();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!document.getElementById('searchWrap').contains(e.target)) closeResults();
+});
+</script>
+</body>
+</html>
