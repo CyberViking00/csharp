@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C# Complete Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #141414;
+  --card: #1a1a1a;
+  --border: #2a2a2a;
+  --border-hover: #3a3a3a;
+  --text: #e0e0e0;
+  --muted: #666;
+  --muted2: #444;
+  --code-bg: #111;
+  --accent: #fff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
+
+/* ── Topbar ── */
+.topbar {
+  display:flex; align-items:center; gap:1rem;
+  padding:0 1.5rem; height:48px;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
+}
+.topbar-brand {
+  font-size:.85rem; font-weight:700; color:var(--text);
+  white-space:nowrap; letter-spacing:-.3px; flex-shrink:0;
+}
+.topbar-brand span { color:var(--muted); font-weight:400; }
+.topbar-nav {
+  display:flex; gap:.25rem; flex-shrink:0;
+}
+.nav-btn {
+  padding:.3rem .75rem; border:1px solid transparent;
+  background:transparent; color:var(--muted);
+  border-radius:6px; font-family:'Inter',sans-serif;
+  font-size:.75rem; font-weight:500; cursor:pointer;
+  white-space:nowrap; transition:all .15s;
+}
+.nav-btn:hover { color:var(--text); background:var(--card); }
+.nav-btn.active {
+  background:var(--card); color:var(--text);
+  border-color:var(--border); font-weight:600;
+}
+.topbar-divider { width:1px; height:20px; background:var(--border); flex-shrink:0; }
+
+/* ── Search ── */
+.search-wrap { position:relative; margin-left:auto; flex-shrink:0; }
+.search-input {
+  background:var(--card); border:1px solid var(--border);
+  color:var(--text); font-family:'JetBrains Mono',monospace;
+  font-size:.75rem; padding:.3rem 1.8rem .3rem .75rem;
+  border-radius:6px; width:180px; outline:none; transition:all .2s;
+}
+.search-input:focus { border-color:var(--border-hover); width:240px; }
+.search-input::placeholder { color:var(--muted2); }
+.search-hint {
+  position:absolute; right:2rem; top:50%; transform:translateY(-50%);
+  font-size:.65rem; color:var(--muted2); pointer-events:none;
+  font-family:'JetBrains Mono',monospace;
+}
+.search-clear {
+  position:absolute; right:.5rem; top:50%; transform:translateY(-50%);
+  color:var(--muted); font-size:.9rem; cursor:pointer;
+  display:none; background:none; border:none; line-height:1;
+}
+.search-results {
+  position:absolute; top:calc(100% + 6px); right:0;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:8px; width:340px; max-height:420px;
+  overflow-y:auto; z-index:999;
+  box-shadow:0 8px 24px rgba(0,0,0,.6); display:none;
+}
+.search-results.open { display:block; }
+.sr-item {
+  padding:.6rem .9rem; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .1s;
+}
+.sr-item:last-child { border-bottom:none; }
+.sr-item:hover { background:#1f1f1f; }
+.sr-mod { font-size:.62rem; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:.15rem; }
+.sr-title { font-size:.82rem; font-weight:600; color:var(--text); }
+.sr-sub { font-size:.7rem; color:var(--muted); margin-top:.1rem; }
+.sr-highlight { color:#fff; background:#2a2a2a; border-radius:2px; padding:0 2px; }
+.sr-empty { padding:1rem; text-align:center; color:var(--muted); font-size:.82rem; }
+
+/* ── Layout ── */
+.layout { display:flex; height:calc(100vh - 48px); overflow:hidden; }
+
+/* ── Sidebar (treeview) ── */
+.sidebar {
+  width:260px; flex-shrink:0;
+  background:var(--surface); border-right:1px solid var(--border);
+  overflow-y:auto; padding:.75rem 0;
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-track { background:transparent; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* Tree */
+.tree-group { margin-bottom:.125rem; }
+.tree-mod {
+  display:flex; align-items:center; gap:.5rem;
+  padding:.45rem 1rem; cursor:pointer;
+  font-size:.78rem; font-weight:600; color:var(--text);
+  user-select:none; transition:background .1s;
+}
+.tree-mod:hover { background:var(--card); }
+.tree-mod.open { color:#fff; }
+.tree-arrow {
+  font-size:.6rem; color:var(--muted); transition:transform .2s; flex-shrink:0;
+}
+.tree-mod.open .tree-arrow { transform:rotate(90deg); color:var(--text); }
+.tree-mod-label { flex:1; min-width:0; }
+.tree-count {
+  font-size:.65rem; font-family:'JetBrains Mono',monospace;
+  color:var(--muted); background:var(--card);
+  border:1px solid var(--border); border-radius:3px;
+  padding:.05rem .3rem; flex-shrink:0;
+}
+.tree-children { display:none; padding:.125rem 0; }
+.tree-mod.open + .tree-children { display:block; }
+.tree-item {
+  display:flex; align-items:flex-start; gap:.5rem;
+  padding:.35rem 1rem .35rem 2rem; cursor:pointer;
+  transition:background .1s; border-left:2px solid transparent;
+}
+.tree-item:hover { background:var(--card); }
+.tree-item.active {
+  background:var(--card); border-left-color:var(--text);
+}
+.tree-num {
+  font-size:.62rem; font-family:'JetBrains Mono',monospace;
+  color:var(--muted2); flex-shrink:0; margin-top:.1rem; width:16px;
+}
+.tree-item-text { flex:1; min-width:0; }
+.tree-title { font-size:.75rem; font-weight:500; color:var(--text); display:block; }
+.tree-sub { font-size:.66rem; color:var(--muted); display:block; margin-top:.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ── Content ── */
+.content {
+  flex:1; overflow-y:auto; padding:1.5rem 2rem;
+  max-width:860px;
+}
+.content::-webkit-scrollbar { width:4px; }
+.content::-webkit-scrollbar-track { background:transparent; }
+.content::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+.section { display:none; animation:fadeIn .2s ease; }
+.section.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+.section-title {
+  font-size:1.1rem; font-weight:700; margin-bottom:1.25rem;
+  display:flex; align-items:center; gap:.6rem; color:#fff;
+}
+.tag {
+  font-size:.6rem; padding:.15rem .45rem; border-radius:4px;
+  font-family:'JetBrains Mono',monospace;
+  background:var(--card); color:var(--muted); border:1px solid var(--border);
+}
+
+/* ── Overview section ── */
+#section-overview {
+  display:none; /* hidden — overview is always the sidebar */
+}
+
+/* ── Topic cards ── */
+.topic-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:8px; margin-bottom:.6rem; overflow:hidden;
+  transition:border-color .15s;
+}
+.topic-card:hover { border-color:var(--border-hover); }
+.topic-header {
+  padding:.75rem 1rem; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+  user-select:none; gap:.5rem;
+}
+.topic-header div { flex:1; min-width:0; }
+.topic-header h3 { font-size:.85rem; font-weight:600; }
+.topic-sub { font-size:.68rem; color:var(--muted); margin-top:.1rem; }
+.arrow { color:var(--muted2); transition:transform .25s; font-size:.75rem; flex-shrink:0; }
+.topic-card.open .arrow { transform:rotate(180deg); }
+.topic-body {
+  display:none; padding:.125rem 1rem 1rem;
+  border-top:1px solid var(--border);
+}
+.topic-card.open .topic-body { display:block; }
+
+/* ── Code ── */
+pre {
+  background:var(--code-bg); border:1px solid var(--border);
+  border-radius:6px; padding:.85rem 1rem; margin:.65rem 0;
+  overflow-x:auto; font-family:'JetBrains Mono',monospace;
+  font-size:.75rem; line-height:1.65; color:#c9d1d9;
+}
+.kw{color:#ff79c6} .ty{color:#8be9fd} .str{color:#f1fa8c}
+.cm{color:#555;font-style:italic} .num{color:#bd93f9}
+.fn{color:#50fa7b} .op{color:#ff79c6}
+
+/* ── Info boxes ── */
+.info,.note,.warn,.tip {
+  border-radius:0 6px 6px 0; margin:.65rem 0;
+  font-size:.8rem; padding:.55rem .9rem; line-height:1.55;
+}
+.info { background:#111a22; border-left:2px solid #336; color:#8aa; }
+.note { background:#1a1a1a; border-left:2px solid #333; color:#888; }
+.warn { background:#1a1700; border-left:2px solid #554400; color:#aa8833; }
+.tip  { background:#0d1a10; border-left:2px solid #224422; color:#668866; }
+
+/* ── Tables ── */
+table { width:100%; border-collapse:collapse; margin:.65rem 0; font-size:.78rem; }
+th { background:#111; color:var(--muted); padding:.45rem .7rem; text-align:left; font-size:.67rem; text-transform:uppercase; letter-spacing:.8px; }
+td { padding:.45rem .7rem; border-top:1px solid var(--border); color:#999; font-family:'JetBrains Mono',monospace; font-size:.74rem; }
+tr:hover td { background:#1f1f1f; }
+
+p { line-height:1.7; color:#888; margin:.4rem 0; font-size:.83rem; }
+h4 { color:var(--muted); font-size:.7rem; margin:.85rem 0 .25rem; text-transform:uppercase; letter-spacing:.8px; }
+
+/* ── Mod label (inside topic body) ── */
+.mod-label { display:none; }
+
+/* ── Scrollbar global ── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">C# <span>Reference</span></div>
+  <div class="topbar-divider"></div>
+  <nav class="topbar-nav">
+    <button class="nav-btn active" data-mod="mod1" onclick="showMod('mod1',this)">I — Basi</button>
+    <button class="nav-btn" data-mod="mod2" onclick="showMod('mod2',this)">II — OOP</button>
+    <button class="nav-btn" data-mod="mod3" onclick="showMod('mod3',this)">III — File</button>
+    <button class="nav-btn" data-mod="mod4" onclick="showMod('mod4',this)">IV — Avanzato</button>
+    <button class="nav-btn" data-mod="mod5" onclick="showMod('mod5',this)">V — Extra</button>
+    <button class="nav-btn" data-mod="mod6" onclick="showMod('mod6',this)">VI — Pro</button>
+  </nav>
+  <div class="search-wrap" id="searchWrap">
+    <input class="search-input" id="searchInput" type="text"
+           placeholder="Cerca… (/ per focus)" autocomplete="off"
+           oninput="onSearch()" onfocus="openResults()"/>
+    <span class="search-hint" id="searchHint">/</span>
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR: treeview -->
+  <aside class="sidebar">
+<div class="tree">
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod1">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">I — Basi</span>
+      <span class="tree-count">15</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod1',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Tipi di Dato</span>
+          <span class="tree-sub">int, double, string, bool, var, const, casting</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Input / Output</span>
+          <span class="tree-sub">Console.Write, ReadLine, interpolazione</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Aritmetica & Math</span>
+          <span class="tree-sub">+−×÷%, operatori composti, libreria Math</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Confronto & Booleani</span>
+          <span class="tree-sub">==, !=, &&, ||, !, operatore ternario</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Strutture di Controllo</span>
+          <span class="tree-sub">if/else, switch, switch expression</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Ciclo for</span>
+          <span class="tree-sub">Iterazioni note, break, continue, step</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Ciclo while / do-while</span>
+          <span class="tree-sub">Condizione prima/dopo, loop interattivo</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Array & foreach</span>
+          <span class="tree-sub">Array fisso, 2D, jagged, metodi Array</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',8)">
+        <span class="tree-num">09</span>
+        <div class="tree-item-text">
+          <span class="tree-title">List&lt;T&gt;</span>
+          <span class="tree-sub">Add, Remove, Find, Sort, Clear, ToArray</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',9)">
+        <span class="tree-num">10</span>
+        <div class="tree-item-text">
+          <span class="tree-title">String — Metodi</span>
+          <span class="tree-sub">Length, Split, Trim, Replace, Substring…</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',10)">
+        <span class="tree-num">11</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Enum</span>
+          <span class="tree-sub">Enumerazioni, valori, casting, Flags</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',11)">
+        <span class="tree-num">12</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Metodi</span>
+          <span class="tree-sub">Parametri, return, overload, ref/out, ricorsione</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',12)">
+        <span class="tree-num">13</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Struct</span>
+          <span class="tree-sub">Tipo valore, costruttori, metodi</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',13)">
+        <span class="tree-num">14</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Nullable & Null Operators</span>
+          <span class="tree-sub">int?, ??, ?., HasValue</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod1',14)">
+        <span class="tree-num">15</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Scope & Visibilità</span>
+          <span class="tree-sub">Scope locale, blocco, shadowing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod2">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">II — OOP</span>
+      <span class="tree-count">10</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod2',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Classi & Oggetti</span>
+          <span class="tree-sub">Blueprint, istanza, new, this</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Costruttori</span>
+          <span class="tree-sub">Default, parametri, overload, object initializer</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Proprietà</span>
+          <span class="tree-sub">get/set, auto-property, validazione, read-only</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Incapsulamento</span>
+          <span class="tree-sub">public, private, protected, internal</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Ereditarietà</span>
+          <span class="tree-sub">class Figlia : Padre, base, override</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Interfacce</span>
+          <span class="tree-sub">interface, implementazione multipla, contratto</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Polimorfismo</span>
+          <span class="tree-sub">virtual, override, abstract, sealed</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Eccezioni</span>
+          <span class="tree-sub">try/catch/finally, throw, custom exceptions</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',8)">
+        <span class="tree-num">09</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Static & Object Init</span>
+          <span class="tree-sub">static class, membri statici, initializer</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod2',9)">
+        <span class="tree-num">10</span>
+        <div class="tree-item-text">
+          <span class="tree-title">is, as, typeof</span>
+          <span class="tree-sub">Type checking, casting sicuro, runtime</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod3">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">III — File</span>
+      <span class="tree-count">7</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod3',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">File di Testo</span>
+          <span class="tree-sub">ReadAllText, WriteAllText, AppendAllText</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">StreamReader/Writer</span>
+          <span class="tree-sub">Lettura/scrittura riga per riga, encoding UTF-8</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">JSON</span>
+          <span class="tree-sub">JsonSerializer Serialize/Deserialize, opzioni</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">XML</span>
+          <span class="tree-sub">XmlSerializer, XDocument, LINQ to XML</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Eccezioni I/O</span>
+          <span class="tree-sub">FileNotFoundException, IOException, pattern</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Dictionary&lt;K,V&gt;</span>
+          <span class="tree-sub">Chiave-valore, ContainsKey, TryGetValue</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod3',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Classe Path</span>
+          <span class="tree-sub">Combine, GetFileName, GetExtension</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod4">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">IV — Avanzato</span>
+      <span class="tree-count">8</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod4',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">LINQ</span>
+          <span class="tree-sub">Where, Select, OrderBy, GroupBy, First, Sum</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Generics &lt;T&gt;</span>
+          <span class="tree-sub">Classi/metodi generici, constraints where T:</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Delegates & Events</span>
+          <span class="tree-sub">Func, Action, Predicate, delegate, event</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Lambda & Closures</span>
+          <span class="tree-sub">=> espressioni, corpo, variabili catturate</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">async / await</span>
+          <span class="tree-sub">Task, async, await, WhenAll, WhenAny</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">DateTime & TimeSpan</span>
+          <span class="tree-sub">Now, Parse, Add, Format, differenza date</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">StringBuilder</span>
+          <span class="tree-sub">Append, Insert, Replace, performance loop</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod4',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Random & Utilità</span>
+          <span class="tree-sub">Next, NextDouble, shuffle, elemento casuale</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod5">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">V — Extra</span>
+      <span class="tree-count">6</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod5',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Tuple & ValueTuple</span>
+          <span class="tree-sub">Ritorno multiplo, named tuples, decostruzione</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Pattern Matching</span>
+          <span class="tree-sub">switch expression avanzata, is, when, range</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Record</span>
+          <span class="tree-sub">Immutabilità, with expression, value equality</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">HashSet, Queue & Stack</span>
+          <span class="tree-sub">Elementi unici, FIFO, LIFO</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Regular Expressions</span>
+          <span class="tree-sub">IsMatch, Match, Matches, Replace, Groups</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod5',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Preprocessore & Attributi</span>
+          <span class="tree-sub">#region, #if DEBUG, [Obsolete], [Serializable]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tree-group">
+    <div class="tree-mod" onclick="treeToggle(this)" data-mod="mod6">
+      <span class="tree-arrow">▶</span>
+      <span class="tree-mod-label">VI — Pro</span>
+      <span class="tree-count">9</span>
+    </div>
+    <div class="tree-children">
+      <div class="tree-item" onclick="showTopic('mod6',0)">
+        <span class="tree-num">01</span>
+        <div class="tree-item-text">
+          <span class="tree-title">IDisposable & using</span>
+          <span class="tree-sub">Gestione risorse, pattern Dispose, using sintattico</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',1)">
+        <span class="tree-num">02</span>
+        <div class="tree-item-text">
+          <span class="tree-title">IEnumerable & yield</span>
+          <span class="tree-sub">Iteratori pigri, yield return, yield break</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',2)">
+        <span class="tree-num">03</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Extension Methods</span>
+          <span class="tree-sub">Metodi estensione, this keyword, static class</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',3)">
+        <span class="tree-num">04</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Thread, Task & Parallel</span>
+          <span class="tree-sub">Task.Run, lock, CancellationToken, Interlocked</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',4)">
+        <span class="tree-num">05</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Collezioni Avanzate</span>
+          <span class="tree-sub">SortedDictionary, ConcurrentDictionary, LinkedList</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',5)">
+        <span class="tree-num">06</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Interfacce Fondamentali</span>
+          <span class="tree-sub">IComparable, IEquatable, IComparer</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',6)">
+        <span class="tree-num">07</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Operator Overloading</span>
+          <span class="tree-sub">Sovraccaricare +, ==, !=, conversioni implicite</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',7)">
+        <span class="tree-num">08</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Indexers & Properties</span>
+          <span class="tree-sub">Indicizzatori, init-only, required, backing field</span>
+        </div>
+      </div>
+      <div class="tree-item" onclick="showTopic('mod6',8)">
+        <span class="tree-num">09</span>
+        <div class="tree-item-text">
+          <span class="tree-title">Namespaces & using</span>
+          <span class="tree-sub">namespace, global using, file-scoped, alias</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+<div class="section" id="section-mod1">
+  <div class="section-title">I — Basi <span class="tag">MOD I</span></div>
+<div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Tipi di Dato</h3><div class="topic-sub">int, double, string, bool, char, var, const, casting, overflow</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <h4>Interi</h4>
+      <table><tr><th>Tipo</th><th>Bit</th><th>Range</th><th>Uso</th></tr>
+        <tr><td>byte</td><td>8</td><td>0–255</td><td>numeri piccoli positivi</td></tr>
+        <tr><td>short</td><td>16</td><td>±32.767</td><td>numeri piccoli</td></tr>
+        <tr><td>int</td><td>32</td><td>±2 miliardi</td><td>uso generale</td></tr>
+        <tr><td>long</td><td>64</td><td>±9 quintilioni</td><td>numeri enormi (aggiungi L)</td></tr>
+      </table>
+      <h4>Decimali</h4>
+      <pre><span class="ty">float</span>   t = <span class="num">36.6f</span>;    <span class="cm">// ~7 cifre, richiede 'f'</span>
+<span class="ty">double</span>  h = <span class="num">1.75</span>;     <span class="cm">// ~15 cifre, default per decimali</span>
+<span class="ty">decimal</span> p = <span class="num">9.99m</span>;   <span class="cm">// ~28 cifre — usa SEMPRE per i soldi!</span></pre>
+      <h4>Altri tipi</h4>
+      <pre><span class="ty">char</span>   c    = <span class="str">'A'</span>;          <span class="cm">// singolo carattere</span>
+<span class="ty">string</span> nome = <span class="str">"Marco"</span>;     <span class="cm">// testo</span>
+<span class="ty">bool</span>   ok   = <span class="kw">true</span>;        <span class="cm">// solo true o false</span>
+<span class="kw">var</span>    n    = <span class="num">42</span>;           <span class="cm">// tipo inferito automaticamente</span>
+<span class="kw">const</span> <span class="ty">double</span> PI = <span class="num">3.14159</span>; <span class="cm">// costante, mai modificabile</span></pre>
+      <h4>Type Casting</h4>
+      <pre><span class="cm">// Implicita (automatica, sicura):</span>
+<span class="ty">int</span> n = <span class="num">10</span>; <span class="ty">double</span> d = n;    <span class="cm">// int → double</span>
+
+<span class="cm">// Esplicita (puoi perdere dati!):</span>
+<span class="ty">double</span> d = <span class="num">9.99</span>;
+<span class="ty">int</span> i = (<span class="ty">int</span>)d;              <span class="cm">// i = 9, decimale perso!</span>
+
+<span class="cm">// Da stringa a numero:</span>
+<span class="ty">int</span> n = <span class="ty">int</span>.<span class="fn">Parse</span>(<span class="str">"42"</span>);
+<span class="ty">int</span> n = Convert.<span class="fn">ToInt32</span>(<span class="str">"42"</span>);
+<span class="ty">bool</span> ok = <span class="ty">int</span>.<span class="fn">TryParse</span>(<span class="str">"abc"</span>, <span class="kw">out int</span> result); <span class="cm">// sicuro, non lancia eccezione</span></pre>
+      <div class="warn">Per i soldi usa SEMPRE decimal — float/double hanno errori di arrotondamento!</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. Input / Output</h3><div class="topic-sub">Console.Write, WriteLine, ReadLine, interpolazione, formattazione</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Output:</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">"Ciao!"</span>);                      <span class="cm">// stampa + va a capo</span>
+Console.<span class="fn">Write</span>(<span class="str">"Ciao "</span>);                          <span class="cm">// stampa senza a capo</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Nome: {nome}, Eta: {eta}"</span>);  <span class="cm">// interpolazione (preferita)</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">"Nome: "</span> + nome + <span class="str">", Eta: "</span> + eta); <span class="cm">// concatenazione</span>
+
+<span class="cm">// Formattazione numeri:</span>
+Console.<span class="fn">WriteLine</span>(prezzo.<span class="fn">ToString</span>(<span class="str">"F2"</span>));  <span class="cm">// 1234,57 (2 decimali)</span>
+Console.<span class="fn">WriteLine</span>(prezzo.<span class="fn">ToString</span>(<span class="str">"C"</span>));   <span class="cm">// valuta: €1.234,57</span>
+Console.<span class="fn">WriteLine</span>(prezzo.<span class="fn">ToString</span>(<span class="str">"N0"</span>));  <span class="cm">// nessun decimale</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">$"{prezzo:F2}"</span>);         <span class="cm">// inline con interpolazione</span>
+
+<span class="cm">// Caratteri speciali:</span>
+<span class="cm">// \n = nuova riga   \t = tab   \\ = backslash   \" = virgoletta</span>
+
+<span class="cm">// Input:</span>
+Console.<span class="fn">Write</span>(<span class="str">"Inserisci nome: "</span>);
+<span class="ty">string</span> nome = Console.<span class="fn">ReadLine</span>();
+<span class="ty">int</span> eta = <span class="ty">int</span>.<span class="fn">Parse</span>(Console.<span class="fn">ReadLine</span>());
+
+<span class="cm">// Input sicuro con TryParse:</span>
+<span class="kw">if</span> (<span class="ty">int</span>.<span class="fn">TryParse</span>(Console.<span class="fn">ReadLine</span>(), <span class="kw">out int</span> numero))
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Hai inserito: {numero}"</span>);
+<span class="kw">else</span>
+    Console.<span class="fn">WriteLine</span>(<span class="str">"Errore: non è un numero!"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. Aritmetica &amp; Math</h3><div class="topic-sub">+−×÷%, operatori composti, incremento, libreria Math</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="ty">int</span> a = <span class="num">10</span>, b = <span class="num">3</span>;
+<span class="ty">int</span> somma     = a + b;  <span class="cm">// 13</span>
+<span class="ty">int</span> diff      = a - b;  <span class="cm">// 7</span>
+<span class="ty">int</span> prodotto  = a * b;  <span class="cm">// 30</span>
+<span class="ty">int</span> quoziente = a / b;  <span class="cm">// 3  ← attenzione! int/int = int</span>
+<span class="ty">int</span> resto     = a % b;  <span class="cm">// 1  (modulo)</span>
+
+<span class="cm">// Per decimali: (double)a / b oppure 10.0 / 3</span>
+
+<span class="cm">// Operatori composti:</span>
+n += <span class="num">5</span>;  n -= <span class="num">3</span>;  n *= <span class="num">2</span>;  n /= <span class="num">4</span>;  n %= <span class="num">4</span>;
+n++;  n--;  ++n;  --n;</pre>
+      <h4>Libreria Math</h4>
+      <pre>Math.<span class="fn">Abs</span>(-<span class="num">5</span>)          <span class="cm">// 5</span>
+Math.<span class="fn">Sqrt</span>(<span class="num">16</span>)         <span class="cm">// 4.0</span>
+Math.<span class="fn">Pow</span>(<span class="num">2</span>, <span class="num">10</span>)       <span class="cm">// 1024.0</span>
+Math.<span class="fn">Round</span>(<span class="num">3.567</span>, <span class="num">2</span>) <span class="cm">// 3.57</span>
+Math.<span class="fn">Floor</span>(<span class="num">3.9</span>)      <span class="cm">// 3.0 (arrotonda per difetto)</span>
+Math.<span class="fn">Ceiling</span>(<span class="num">3.1</span>)   <span class="cm">// 4.0 (arrotonda per eccesso)</span>
+Math.<span class="fn">Max</span>(<span class="num">10</span>, <span class="num">20</span>)     <span class="cm">// 20</span>
+Math.<span class="fn">Min</span>(<span class="num">10</span>, <span class="num">20</span>)     <span class="cm">// 10</span>
+Math.<span class="fn">Log</span>(<span class="num">100</span>, <span class="num">10</span>)    <span class="cm">// 2.0 (logaritmo base 10)</span>
+Math.<span class="fn">Sin</span>(Math.PI/<span class="num">2</span>) <span class="cm">// 1.0</span>
+Math.PI                <span class="cm">// 3.14159…</span>
+Math.E                 <span class="cm">// 2.71828…</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. Operatori di Confronto &amp; Booleani</h3><div class="topic-sub">==, !=, &gt;, &lt;, &amp;&amp;, ||, !, operatore ternario</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Confronto (restituiscono true/false):</span>
+a == b   <span class="cm">// uguale</span>
+a != b   <span class="cm">// diverso</span>
+a > b    <span class="cm">// maggiore</span>
+a < b    <span class="cm">// minore</span>
+a >= b   <span class="cm">// maggiore o uguale</span>
+a <= b   <span class="cm">// minore o uguale</span>
+
+<span class="cm">// Logici:</span>
+<span class="ty">bool</span> adulto = eta >= <span class="num">18</span> <span class="op">&amp;&amp;</span> haDocumento;  <span class="cm">// AND — entrambi veri</span>
+<span class="ty">bool</span> paga   = haCarta <span class="op">||</span> haContanti;    <span class="cm">// OR — almeno uno vero</span>
+<span class="ty">bool</span> offline = <span class="op">!</span>connesso;               <span class="cm">// NOT</span>
+
+<span class="cm">// Ternario — if/else su una riga:</span>
+<span class="ty">string</span> r = eta >= <span class="num">18</span> ? <span class="str">"Adulto"</span> : <span class="str">"Minore"</span>;</pre>
+      <div class="warn">Non confondere = (assegnazione) con == (confronto)!</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. Strutture di Controllo</h3><div class="topic-sub">if/else if/else, switch, switch expression (C# 8+)</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// if / else if / else:</span>
+<span class="kw">if</span> (voto >= <span class="num">90</span>)      Console.<span class="fn">WriteLine</span>(<span class="str">"Ottimo!"</span>);
+<span class="kw">else if</span> (voto >= <span class="num">75</span>) Console.<span class="fn">WriteLine</span>(<span class="str">"Buono"</span>);
+<span class="kw">else if</span> (voto >= <span class="num">60</span>) Console.<span class="fn">WriteLine</span>(<span class="str">"Sufficiente"</span>);
+<span class="kw">else</span>                 Console.<span class="fn">WriteLine</span>(<span class="str">"Insufficiente"</span>);
+
+<span class="cm">// switch:</span>
+<span class="kw">switch</span> (giorno) {
+    <span class="kw">case</span> <span class="num">1</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Lunedì"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">6</span>:
+    <span class="kw">case</span> <span class="num">7</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Weekend!"</span>); <span class="kw">break</span>;
+    <span class="kw">default</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Altro"</span>); <span class="kw">break</span>;
+}
+
+<span class="cm">// switch expression (C# 8+):</span>
+<span class="ty">string</span> nome = giorno <span class="kw">switch</span> {
+    <span class="num">1</span> => <span class="str">"Lunedì"</span>,
+    <span class="num">2</span> => <span class="str">"Martedì"</span>,
+    _ => <span class="str">"Altro"</span>   <span class="cm">// _ = default</span>
+};</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Ciclo for</h3><div class="topic-sub">Iterazioni note, contatore, break, continue, step</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Struttura: for (init; condizione; aggiornamento)</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i < <span class="num">5</span>; i++)
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"i = {i}"</span>);  <span class="cm">// 0, 1, 2, 3, 4</span>
+
+<span class="cm">// Contare al contrario:</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">10</span>; i >= <span class="num">0</span>; i--)
+    Console.<span class="fn">Write</span>(i + <span class="str">" "</span>);
+
+<span class="cm">// Step diverso da 1:</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i <= <span class="num">20</span>; i += <span class="num">2</span>)
+    Console.<span class="fn">Write</span>(i + <span class="str">" "</span>);  <span class="cm">// 0 2 4 6 ... 20</span>
+
+<span class="cm">// break e continue:</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i < <span class="num">10</span>; i++) {
+    <span class="kw">if</span> (i == <span class="num">3</span>) <span class="kw">continue</span>;  <span class="cm">// salta il 3</span>
+    <span class="kw">if</span> (i == <span class="num">7</span>) <span class="kw">break</span>;     <span class="cm">// esce dal ciclo</span>
+    Console.<span class="fn">Write</span>(i + <span class="str">" "</span>); <span class="cm">// 0 1 2 4 5 6</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7. Ciclo while / do-while</h3><div class="topic-sub">Condizione prima/dopo, loop infinito, menu interattivo</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// while — condizione PRIMA:</span>
+<span class="ty">int</span> i = <span class="num">0</span>;
+<span class="kw">while</span> (i < <span class="num">5</span>) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"i = {i}"</span>);
+    i++;
+}
+
+<span class="cm">// do-while — condizione DOPO (esegue almeno 1 volta):</span>
+<span class="ty">string</span> scelta;
+<span class="kw">do</span> {
+    Console.<span class="fn">WriteLine</span>(<span class="str">"1. Gioca  0. Esci"</span>);
+    scelta = Console.<span class="fn">ReadLine</span>();
+} <span class="kw">while</span> (scelta != <span class="str">"0"</span>);</pre>
+      <table>
+        <tr><th></th><th>for</th><th>while</th><th>do-while</th></tr>
+        <tr><td>Quando</td><td>Iterazioni note</td><td>Iterazioni non note</td><td>Almeno 1 volta</td></tr>
+        <tr><td>Condizione</td><td>Prima</td><td>Prima</td><td>Dopo</td></tr>
+        <tr><td>Esempio</td><td>Scorrere array</td><td>Input utente</td><td>Menu</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>8. Array &amp; foreach</h3><div class="topic-sub">Array fisso, 2D, jagged, metodi Array, ciclo foreach</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Dichiarazione:</span>
+<span class="ty">int</span>[] numeri = <span class="kw">new</span> <span class="ty">int</span>[<span class="num">5</span>];          <span class="cm">// 5 elementi, tutti 0</span>
+<span class="ty">int</span>[] numeri = { <span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span> }; <span class="cm">// con valori</span>
+Console.<span class="fn">WriteLine</span>(numeri[<span class="num">0</span>]);       <span class="cm">// 10 (indice parte da 0!)</span>
+Console.<span class="fn">WriteLine</span>(numeri.Length);    <span class="cm">// 4</span>
+
+<span class="cm">// foreach:</span>
+<span class="kw">foreach</span> (<span class="ty">string</span> frutto <span class="kw">in</span> frutti)
+    Console.<span class="fn">WriteLine</span>(frutto);
+
+<span class="cm">// Array 2D:</span>
+<span class="ty">int</span>[,] griglia = { { <span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span> }, { <span class="num">4</span>,<span class="num">5</span>,<span class="num">6</span> } };
+Console.<span class="fn">WriteLine</span>(griglia[<span class="num">0</span>, <span class="num">1</span>]);  <span class="cm">// 2</span>
+griglia.<span class="fn">GetLength</span>(<span class="num">0</span>);  <span class="cm">// righe</span>
+griglia.<span class="fn">GetLength</span>(<span class="num">1</span>);  <span class="cm">// colonne</span>
+
+<span class="cm">// Jagged array (righe di lunghezza diversa):</span>
+<span class="ty">int</span>[][] jagged = <span class="kw">new</span> <span class="ty">int</span>[<span class="num">3</span>][];
+jagged[<span class="num">0</span>] = <span class="kw">new</span> <span class="ty">int</span>[] { <span class="num">1</span>, <span class="num">2</span> };
+jagged[<span class="num">1</span>] = <span class="kw">new</span> <span class="ty">int</span>[] { <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> };</pre>
+      <h4>Metodi Array</h4>
+      <pre>Array.<span class="fn">Sort</span>(numeri);                     <span class="cm">// ordina</span>
+Array.<span class="fn">Reverse</span>(numeri);                  <span class="cm">// inverte</span>
+<span class="ty">int</span> pos = Array.<span class="fn">IndexOf</span>(numeri, <span class="num">5</span>);    <span class="cm">// trova posizione</span>
+Array.<span class="fn">Clear</span>(numeri, <span class="num">0</span>, numeri.Length); <span class="cm">// azzera</span>
+Array.<span class="fn">Copy</span>(src, dst, length);           <span class="cm">// copia</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>9. List&lt;T&gt;</h3><div class="topic-sub">Array dinamico, Add/Remove/Find/Sort/Clear/ToArray/AddRange</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre>List&lt;<span class="ty">string</span>&gt; nomi = <span class="kw">new</span> List&lt;<span class="ty">string</span>&gt;();
+nomi.<span class="fn">Add</span>(<span class="str">"Marco"</span>);
+nomi.<span class="fn">Add</span>(<span class="str">"Giulia"</span>);
+nomi.<span class="fn">Insert</span>(<span class="num">1</span>, <span class="str">"Anna"</span>);      <span class="cm">// inserisce in posizione 1</span>
+Console.<span class="fn">WriteLine</span>(nomi.Count); <span class="cm">// usa Count, non Length!</span>
+nomi.<span class="fn">Remove</span>(<span class="str">"Marco"</span>);         <span class="cm">// rimuove per valore</span>
+nomi.<span class="fn">RemoveAt</span>(<span class="num">0</span>);             <span class="cm">// rimuove per indice</span>
+nomi.<span class="fn">Contains</span>(<span class="str">"Giulia"</span>);     <span class="cm">// true</span>
+nomi.<span class="fn">Sort</span>();
+nomi.<span class="fn">Reverse</span>();
+nomi.<span class="fn">Clear</span>();
+
+<span class="cm">// Aggiungere più elementi:</span>
+<span class="ty">string</span>[] nuovi = { <span class="str">"Luca"</span>, <span class="str">"Sara"</span> };
+nomi.<span class="fn">AddRange</span>(nuovi);
+
+<span class="cm">// Cercare:</span>
+<span class="ty">string</span> trovato = nomi.<span class="fn">Find</span>(n => n.<span class="fn">StartsWith</span>(<span class="str">"G"</span>));
+List&lt;<span class="ty">string</span>&gt; tutti = nomi.<span class="fn">FindAll</span>(n => n.Length > <span class="num">4</span>);
+
+<span class="cm">// Convertire in array:</span>
+<span class="ty">string</span>[] arr = nomi.<span class="fn">ToArray</span>();</pre>
+      <table>
+        <tr><th></th><th>Array</th><th>List&lt;T&gt;</th></tr>
+        <tr><td>Dimensione</td><td>Fissa</td><td>Dinamica</td></tr>
+        <tr><td>Lunghezza</td><td>.Length</td><td>.Count</td></tr>
+        <tr><td>Aggiungere</td><td>Impossibile</td><td>.Add()</td></tr>
+        <tr><td>Rimuovere</td><td>Impossibile</td><td>.Remove()</td></tr>
+        <tr><td>Usalo per</td><td>Dimensione nota</td><td>Dimensione variabile</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>10. String — Metodi Completi</h3><div class="topic-sub">Length, Split, Trim, Replace, Contains, Substring, IndexOf, Join…</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="ty">string</span> s = <span class="str">" Ciao Mondo! "</span>;
+s.Length                      <span class="cm">// 14</span>
+s.<span class="fn">ToUpper</span>()                   <span class="cm">// " CIAO MONDO! "</span>
+s.<span class="fn">ToLower</span>()                   <span class="cm">// " ciao mondo! "</span>
+s.<span class="fn">Trim</span>()                      <span class="cm">// "Ciao Mondo!" (rimuove spazi)</span>
+s.<span class="fn">TrimStart</span>() / s.<span class="fn">TrimEnd</span>()  <span class="cm">// solo a sinistra / destra</span>
+s.<span class="fn">Replace</span>(<span class="str">"Mondo"</span>, <span class="str">"Italia"</span>) <span class="cm">// " Ciao Italia! "</span>
+s.<span class="fn">Contains</span>(<span class="str">"Ciao"</span>)           <span class="cm">// true</span>
+s.<span class="fn">StartsWith</span>(<span class="str">" C"</span>)          <span class="cm">// true</span>
+s.<span class="fn">EndsWith</span>(<span class="str">"! "</span>)            <span class="cm">// true</span>
+s.<span class="fn">IndexOf</span>(<span class="str">"Mondo"</span>)          <span class="cm">// 6 (posizione)</span>
+s.<span class="fn">Substring</span>(<span class="num">1</span>, <span class="num">4</span>)           <span class="cm">// "Ciao"</span>
+s.<span class="fn">Split</span>(<span class="str">' '</span>)                 <span class="cm">// array di parole</span>
+<span class="ty">string</span>.<span class="fn">Join</span>(<span class="str">", "</span>, arrayNomi) <span class="cm">// "Luca, Marco, Anna"</span>
+<span class="ty">string</span>.<span class="fn">IsNullOrEmpty</span>(s)       <span class="cm">// true se null o ""</span>
+<span class="ty">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(s)  <span class="cm">// true se null, "" o solo spazi</span>
+s.<span class="fn">PadLeft</span>(<span class="num">15</span>)               <span class="cm">// aggiunge spazi a sinistra</span>
+s.<span class="fn">PadRight</span>(<span class="num">15</span>, <span class="str">'*'</span>)         <span class="cm">// aggiunge * a destra</span>
+char.<span class="fn">ToUpper</span>(s[<span class="num">0</span>]) + s.<span class="fn">Substring</span>(<span class="num">1</span>).<span class="fn">ToLower</span>()  <span class="cm">// Capitalizza</span></pre>
+      <div class="tip">Le stringhe in C# sono immutabili — ogni operazione crea una nuova stringa. Per molte concatenazioni usa StringBuilder.</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>11. Enum</h3><div class="topic-sub">Enumerazioni, valori personalizzati, casting, Flags</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Definizione (fuori dalla classe o dentro):</span>
+<span class="kw">enum</span> Giorno { Lunedi, Martedi, Mercoledi, Giovedi, Venerdi, Sabato, Domenica }
+
+<span class="cm">// Uso:</span>
+Giorno oggi = Giorno.Lunedi;
+Console.<span class="fn">WriteLine</span>(oggi);         <span class="cm">// "Lunedi"</span>
+Console.<span class="fn">WriteLine</span>((<span class="ty">int</span>)oggi);   <span class="cm">// 0 (indice parte da 0)</span>
+
+<span class="cm">// Valori personalizzati:</span>
+<span class="kw">enum</span> Stato { Attivo = <span class="num">1</span>, Inattivo = <span class="num">0</span>, Sospeso = <span class="num">2</span> }
+
+<span class="cm">// Casting da int a enum:</span>
+Stato s = (Stato)<span class="num">1</span>;   <span class="cm">// Stato.Attivo</span>
+
+<span class="cm">// Switch su enum:</span>
+<span class="kw">switch</span> (oggi) {
+    <span class="kw">case</span> Giorno.Sabato:
+    <span class="kw">case</span> Giorno.Domenica: Console.<span class="fn">WriteLine</span>(<span class="str">"Weekend!"</span>); <span class="kw">break</span>;
+    <span class="kw">default</span>: Console.<span class="fn">WriteLine</span>(<span class="str">"Settimana lavorativa"</span>); <span class="kw">break</span>;
+}
+
+<span class="cm">// Enum.Parse / Enum.TryParse:</span>
+Giorno g = Enum.<span class="fn">Parse</span>&lt;Giorno&gt;(<span class="str">"Martedi"</span>);
+<span class="ty">bool</span> ok = Enum.<span class="fn">TryParse</span>(<span class="str">"Lunedi"</span>, <span class="kw">out</span> Giorno result);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>12. I Metodi</h3><div class="topic-sub">Parametri, return, overload, ref/out, ricorsione, params, expression-bodied</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// void = non restituisce niente:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Saluta</span>(<span class="ty">string</span> nome) => Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciao, {nome}!"</span>);
+
+<span class="cm">// return = restituisce un valore:</span>
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">Somma</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) => a + b;
+
+<span class="cm">// Parametri opzionali (devono essere ultimi!):</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Saluta</span>(<span class="ty">string</span> nome, <span class="ty">string</span> saluto = <span class="str">"Ciao"</span>) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{saluto}, {nome}!"</span>);
+}
+<span class="fn">Saluta</span>(<span class="str">"Marco"</span>);              <span class="cm">// Ciao, Marco!</span>
+<span class="fn">Saluta</span>(<span class="str">"Giulia"</span>, <span class="str">"Buongiorno"</span>); <span class="cm">// Buongiorno, Giulia!</span></pre>
+      <h4>Overloading</h4>
+      <pre><span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>(<span class="ty">int</span> n)    { <span class="cm">/* ... */</span> }
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>(<span class="ty">string</span> s) { <span class="cm">/* ... */</span> }  <span class="cm">// stesso nome, tipi diversi</span></pre>
+      <h4>ref e out</h4>
+      <pre><span class="cm">// ref = modifica la variabile originale:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Raddoppia</span>(<span class="kw">ref</span> <span class="ty">int</span> n) { n *= <span class="num">2</span>; }
+<span class="ty">int</span> x = <span class="num">5</span>; <span class="fn">Raddoppia</span>(<span class="kw">ref</span> x);  <span class="cm">// x ora è 10</span>
+
+<span class="cm">// out = restituisce più valori:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MinMax</span>(<span class="ty">int</span>[] arr, <span class="kw">out</span> <span class="ty">int</span> min, <span class="kw">out</span> <span class="ty">int</span> max) { <span class="cm">/*...*/</span> }
+<span class="fn">MinMax</span>(numeri, <span class="kw">out int</span> minimo, <span class="kw">out int</span> massimo);</pre>
+      <h4>params — numero variabile di argomenti</h4>
+      <pre><span class="kw">static</span> <span class="ty">int</span> <span class="fn">Somma</span>(<span class="kw">params</span> <span class="ty">int</span>[] numeri) {
+    <span class="ty">int</span> tot = <span class="num">0</span>;
+    <span class="kw">foreach</span> (<span class="ty">int</span> n <span class="kw">in</span> numeri) tot += n;
+    <span class="kw">return</span> tot;
+}
+<span class="fn">Somma</span>(<span class="num">1</span>, <span class="num">2</span>); <span class="fn">Somma</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>); <span class="cm">// quanti vuoi</span></pre>
+      <h4>Ricorsione</h4>
+      <pre><span class="kw">static</span> <span class="ty">int</span> <span class="fn">Fattoriale</span>(<span class="ty">int</span> n) {
+    <span class="kw">if</span> (n <= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;         <span class="cm">// caso base — OBBLIGATORIO</span>
+    <span class="kw">return</span> n * <span class="fn">Fattoriale</span>(n - <span class="num">1</span>); <span class="cm">// chiamata ricorsiva</span>
+}
+<span class="fn">Fattoriale</span>(<span class="num">5</span>);  <span class="cm">// 5×4×3×2×1 = 120</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>13. Struct</h3><div class="topic-sub">Tipo valore, costruttori, metodi, struct vs class</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">struct</span> Prodotto {
+    <span class="kw">public</span> <span class="ty">string</span> Nome;
+    <span class="kw">public</span> <span class="ty">double</span> Prezzo;
+    <span class="kw">public</span> <span class="ty">int</span>    Quantita;
+
+    <span class="kw">public</span> <span class="fn">Prodotto</span>(<span class="ty">string</span> nome, <span class="ty">double</span> prezzo, <span class="ty">int</span> qty) {
+        Nome = nome; Prezzo = prezzo; Quantita = qty;
+    }
+
+    <span class="kw">public</span> <span class="ty">double</span> <span class="fn">ValoreTotale</span>() => Prezzo * Quantita;
+}
+
+Prodotto p = <span class="kw">new</span> <span class="fn">Prodotto</span>(<span class="str">"Pizza"</span>, <span class="num">8.50</span>, <span class="num">10</span>);
+Console.<span class="fn">WriteLine</span>(p.<span class="fn">ValoreTotale</span>()); <span class="cm">// 85.0</span></pre>
+      <table>
+        <tr><th>Caratteristica</th><th>struct</th><th>class</th></tr>
+        <tr><td>Tipo</td><td>Valore (Stack)</td><td>Riferimento (Heap)</td></tr>
+        <tr><td>Ereditarietà</td><td>No</td><td>Sì</td></tr>
+        <tr><td>Copia</td><td>Indipendente</td><td>Riferimento condiviso</td></tr>
+        <tr><td>Usalo per</td><td>Dati piccoli/semplici</td><td>Oggetti complessi</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>14. Nullable &amp; Null Operators</h3><div class="topic-sub">int?, string?, ??, ?., HasValue, null coalescing assignment</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Tipo nullable — può contenere null:</span>
+<span class="ty">int</span>? eta = <span class="kw">null</span>;
+<span class="ty">string</span>? nome = <span class="kw">null</span>;
+
+<span class="cm">// ?? (null coalescing) — valore di default se null:</span>
+<span class="ty">int</span> valore = eta ?? <span class="num">0</span>;
+<span class="ty">string</span> n = nome ?? <span class="str">"Sconosciuto"</span>;
+
+<span class="cm">// ??= (null coalescing assignment):</span>
+nome ??= <span class="str">"Default"</span>;  <span class="cm">// assegna solo se null</span>
+
+<span class="cm">// ?. (null conditional) — evita NullReferenceException:</span>
+<span class="ty">int</span>? lunghezza = nome?.Length;
+<span class="ty">string</span>? upper = nome?.ToUpper();
+
+<span class="cm">// Controllare se ha valore:</span>
+<span class="kw">if</span> (eta.HasValue)
+    Console.<span class="fn">WriteLine</span>(eta.Value);
+
+<span class="cm">// ! (null-forgiving) — dici al compilatore "so che non è null":</span>
+<span class="ty">string</span> s = nome!;  <span class="cm">// usa con cautela</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>15. Scope &amp; Visibilità delle Variabili</h3><div class="topic-sub">Scope locale, blocco, classe, shadowing</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="ty">int</span> x = <span class="num">10</span>;  <span class="cm">// variabile del metodo</span>
+
+<span class="kw">if</span> (<span class="kw">true</span>) {
+    <span class="ty">int</span> y = <span class="num">5</span>;  <span class="cm">// esiste solo dentro questo blocco</span>
+    Console.<span class="fn">WriteLine</span>(x);  <span class="cm">// OK — x è visibile</span>
+    Console.<span class="fn">WriteLine</span>(y);  <span class="cm">// OK</span>
+}
+<span class="cm">// Console.WriteLine(y);  ← ERRORE! y non esiste più</span>
+
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i < <span class="num">5</span>; i++) {
+    <span class="cm">// i esiste solo dentro il for</span>
+}
+<span class="cm">// Console.WriteLine(i);  ← ERRORE!</span></pre>
+      <div class="note">Una variabile esiste solo nel blocco {} in cui è dichiarata. I blocchi interni possono vedere le variabili dei blocchi esterni, ma non viceversa.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MOD II -->
+<div class="section"
+</div>
+
+<div class="section" id="section-mod2">
+  <div class="section-title">II — OOP <span class="tag">MOD II</span></div>
+<div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Classi &amp; Oggetti</h3><div class="topic-sub">Blueprint, istanza, new, this, campi pubblici</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">class</span> <span class="ty">Persona</span> {
+    <span class="kw">public</span> <span class="ty">string</span> Nome;
+    <span class="kw">public</span> <span class="ty">int</span>    Eta;
+
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Saluta</span>() {
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciao, sono {Nome} e ho {Eta} anni."</span>);
+    }
+}
+
+<span class="cm">// Creazione di un oggetto (istanza):</span>
+Persona p = <span class="kw">new</span> <span class="ty">Persona</span>();
+p.Nome = <span class="str">"Marco"</span>;
+p.Eta  = <span class="num">25</span>;
+p.<span class="fn">Saluta</span>();  <span class="cm">// Ciao, sono Marco e ho 25 anni.</span></pre>
+      <div class="note">this si riferisce all'istanza corrente dell'oggetto. Serve quando un parametro ha lo stesso nome di un campo.</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. Costruttori &amp; Object Initializer</h3><div class="topic-sub">Costruttore di default, con parametri, overload, object initializer</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">class</span> <span class="ty">Auto</span> {
+    <span class="kw">public</span> <span class="ty">string</span> Marca;
+    <span class="kw">public</span> <span class="ty">int</span>    Anno;
+
+    <span class="kw">public</span> <span class="fn">Auto</span>() { Marca = <span class="str">"Sconosciuta"</span>; }         <span class="cm">// default</span>
+    <span class="kw">public</span> <span class="fn">Auto</span>(<span class="ty">string</span> marca) { Marca = marca; }        <span class="cm">// con parametro</span>
+    <span class="kw">public</span> <span class="fn">Auto</span>(<span class="ty">string</span> marca, <span class="ty">int</span> anno) {
+        Marca = marca; Anno = anno;
+    }
+}
+
+Auto a1 = <span class="kw">new</span> <span class="ty">Auto</span>();
+Auto a2 = <span class="kw">new</span> <span class="ty">Auto</span>(<span class="str">"Ferrari"</span>);
+Auto a3 = <span class="kw">new</span> <span class="ty">Auto</span>(<span class="str">"Lamborghini"</span>, <span class="num">2023</span>);
+
+<span class="cm">// Object Initializer — imposta proprietà alla creazione:</span>
+Auto a4 = <span class="kw">new</span> <span class="ty">Auto</span> { Marca = <span class="str">"BMW"</span>, Anno = <span class="num">2022</span> };</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. Proprietà (Properties)</h3><div class="topic-sub">get/set, auto-property, validazione, read-only</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">class</span> <span class="ty">Persona</span> {
+    <span class="kw">private</span> <span class="ty">int</span> _eta;
+
+    <span class="cm">// Proprietà con validazione:</span>
+    <span class="kw">public</span> <span class="ty">int</span> Eta {
+        <span class="kw">get</span> { <span class="kw">return</span> _eta; }
+        <span class="kw">set</span> { <span class="kw">if</span> (value >= <span class="num">0</span>) _eta = value; }
+    }
+
+    <span class="cm">// Auto-property (sintassi breve):</span>
+    <span class="kw">public</span> <span class="ty">string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    <span class="cm">// Read-only (imposta solo nel costruttore):</span>
+    <span class="kw">public</span> <span class="ty">string</span> CodiceFiscale { <span class="kw">get</span>; <span class="kw">private set</span>; }
+
+    <span class="cm">// Proprietà calcolata:</span>
+    <span class="kw">public</span> <span class="ty">bool</span> EMaggiorenne => _eta >= <span class="num">18</span>;
+}
+
+Persona p = <span class="kw">new</span> <span class="ty">Persona</span>();
+p.Nome = <span class="str">"Marco"</span>;
+p.Eta = -<span class="num">5</span>;  <span class="cm">// ignorato dalla validazione</span>
+Console.<span class="fn">WriteLine</span>(p.Eta);  <span class="cm">// 0</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. Incapsulamento</h3><div class="topic-sub">public, private, protected, internal — modificatori di accesso</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <table>
+        <tr><th>Modificatore</th><th>Accessibile da</th></tr>
+        <tr><td>public</td><td>Ovunque</td></tr>
+        <tr><td>private</td><td>Solo dentro la classe</td></tr>
+        <tr><td>protected</td><td>Classe + classi derivate</td></tr>
+        <tr><td>internal</td><td>Solo nello stesso assembly</td></tr>
+        <tr><td>(nessuno)</td><td>private per campi, internal per classi</td></tr>
+      </table>
+      <pre><span class="kw">class</span> <span class="ty">ContoBancario</span> {
+    <span class="kw">private</span> <span class="ty">double</span> _saldo;          <span class="cm">// nascosto</span>
+    <span class="kw">public</span>  <span class="ty">double</span> Saldo => _saldo;  <span class="cm">// solo lettura</span>
+
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Deposita</span>(<span class="ty">double</span> importo) {
+        <span class="kw">if</span> (importo > <span class="num">0</span>) _saldo += importo;
+    }
+    <span class="kw">public</span> <span class="ty">bool</span> <span class="fn">Preleva</span>(<span class="ty">double</span> importo) {
+        <span class="kw">if</span> (importo > <span class="num">0</span> && importo <= _saldo) { _saldo -= importo; <span class="kw">return</span> <span class="kw">true</span>; }
+        <span class="kw">return</span> <span class="kw">false</span>;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. Ereditarietà</h3><div class="topic-sub">class Figlia : Padre, base, override, virtual, sealed</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">class</span> <span class="ty">Animale</span> {
+    <span class="kw">public</span> <span class="ty">string</span> Nome;
+    <span class="kw">public</span> <span class="fn">Animale</span>(<span class="ty">string</span> nome) { Nome = nome; }
+    <span class="kw">public</span> <span class="kw">virtual</span> <span class="ty">void</span> <span class="fn">FaiVerso</span>() =>
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"{Nome} fa un verso."</span>);
+}
+
+<span class="kw">class</span> <span class="ty">Cane</span> : <span class="ty">Animale</span> {
+    <span class="kw">public</span> <span class="fn">Cane</span>(<span class="ty">string</span> nome) : <span class="kw">base</span>(nome) { }  <span class="cm">// chiama costruttore padre</span>
+    <span class="kw">public</span> <span class="kw">override</span> <span class="ty">void</span> <span class="fn">FaiVerso</span>() =>
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"{Nome} dice: Bau!"</span>);
+}
+
+Cane c = <span class="kw">new</span> <span class="fn">Cane</span>(<span class="str">"Rex"</span>);
+c.<span class="fn">FaiVerso</span>();  <span class="cm">// Rex dice: Bau!</span></pre>
+      <div class="note">In C# una classe può ereditare da una sola classe padre (ereditarietà singola), ma può implementare più interfacce.</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Interfacce</h3><div class="topic-sub">interface, implementazione multipla, contratto</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">interface</span> <span class="ty">IVolante</span> {
+    <span class="ty">void</span> <span class="fn">Decolla</span>();
+    <span class="ty">void</span> <span class="fn">Atterra</span>();
+    <span class="ty">double</span> Altitudine { <span class="kw">get</span>; }
+}
+
+<span class="kw">interface</span> <span class="ty">INuotante</span> { <span class="ty">void</span> <span class="fn">Nuota</span>(); }
+
+<span class="cm">// Una classe può implementare PIÙ interfacce:</span>
+<span class="kw">class</span> <span class="ty">Anatra</span> : <span class="ty">IVolante</span>, <span class="ty">INuotante</span> {
+    <span class="kw">public</span> <span class="ty">double</span> Altitudine { <span class="kw">get</span>; <span class="kw">private set</span>; }
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Decolla</span>() { Console.<span class="fn">WriteLine</span>(<span class="str">"Vola!"</span>); }
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Atterra</span>() { Console.<span class="fn">WriteLine</span>(<span class="str">"Atterra!"</span>); }
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Nuota</span>()   { Console.<span class="fn">WriteLine</span>(<span class="str">"Nuota!"</span>); }
+}</pre>
+      <table>
+        <tr><th></th><th>Interfaccia</th><th>Classe Astratta</th></tr>
+        <tr><td>Implementazione</td><td>Solo firma</td><td>Può avere codice</td></tr>
+        <tr><td>Ereditarietà</td><td>Più interfacce</td><td>Una sola classe</td></tr>
+        <tr><td>Campi</td><td>Non ammessi</td><td>Ammessi</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7. Polimorfismo, Abstract &amp; Sealed</h3><div class="topic-sub">virtual, override, abstract class, sealed</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// abstract — non si può istanziare direttamente:</span>
+<span class="kw">abstract</span> <span class="kw">class</span> <span class="ty">Forma</span> {
+    <span class="kw">public</span> <span class="kw">abstract</span> <span class="ty">double</span> <span class="fn">Area</span>();  <span class="cm">// DEVE essere implementato</span>
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">StampaArea</span>() => Console.<span class="fn">WriteLine</span>(<span class="str">$"Area: {Area():F2}"</span>);
+}
+
+<span class="kw">class</span> <span class="ty">Cerchio</span> : <span class="ty">Forma</span> {
+    <span class="kw">public</span> <span class="ty">double</span> Raggio;
+    <span class="kw">public</span> <span class="fn">Cerchio</span>(<span class="ty">double</span> r) { Raggio = r; }
+    <span class="kw">public</span> <span class="kw">override</span> <span class="ty">double</span> <span class="fn">Area</span>() => Math.PI * Raggio * Raggio;
+}
+
+<span class="cm">// Polimorfismo — tratta oggetti diversi in modo uniforme:</span>
+Forma[] forme = { <span class="kw">new</span> <span class="fn">Cerchio</span>(<span class="num">5</span>), <span class="kw">new</span> <span class="fn">Cerchio</span>(<span class="num">3</span>) };
+<span class="kw">foreach</span> (Forma f <span class="kw">in</span> forme) f.<span class="fn">StampaArea</span>();
+
+<span class="cm">// sealed — blocca ulteriori override:</span>
+<span class="kw">class</span> <span class="ty">Figlia</span> : <span class="ty">Base</span> {
+    <span class="kw">public</span> <span class="kw">sealed</span> <span class="kw">override</span> <span class="ty">void</span> <span class="fn">Metodo</span>() { <span class="cm">/* nessuna classe può fare override di questo */</span> }
+}</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>8. Gestione delle Eccezioni</h3><div class="topic-sub">try/catch/finally, throw, eccezioni personalizzate</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">try</span> {
+    <span class="ty">int</span> n = <span class="ty">int</span>.<span class="fn">Parse</span>(Console.<span class="fn">ReadLine</span>());
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Numero: {n}"</span>);
+}
+<span class="kw">catch</span> (FormatException ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Formato errato: {ex.Message}"</span>);
+}
+<span class="kw">catch</span> (OverflowException ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Numero troppo grande: {ex.Message}"</span>);
+}
+<span class="kw">catch</span> (Exception ex) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Errore generico: {ex.Message}"</span>);
+}
+<span class="kw">finally</span> {
+    Console.<span class="fn">WriteLine</span>(<span class="str">"Eseguito SEMPRE, con o senza errore"</span>);
+}</pre>
+      <h4>throw — lanciare eccezioni</h4>
+      <pre><span class="kw">if</span> (importo <= <span class="num">0</span>)
+    <span class="kw">throw</span> <span class="kw">new</span> ArgumentException(<span class="str">"Importo deve essere positivo!"</span>);</pre>
+      <h4>Eccezione personalizzata</h4>
+      <pre><span class="kw">class</span> <span class="ty">SaldoInsufficienteException</span> : Exception {
+    <span class="kw">public</span> <span class="ty">double</span> Saldo;
+    <span class="kw">public</span> <span class="fn">SaldoInsufficienteException</span>(<span class="ty">double</span> saldo)
+        : <span class="kw">base</span>(<span class="str">$"Saldo insufficiente: {saldo}€"</span>) { Saldo = saldo; }
+}</pre>
+      <table>
+        <tr><th>Eccezione</th><th>Causa</th></tr>
+        <tr><td>FormatException</td><td>int.Parse("abc")</td></tr>
+        <tr><td>NullReferenceException</td><td>Accesso a oggetto null</td></tr>
+        <tr><td>IndexOutOfRangeException</td><td>Indice array fuori dai limiti</td></tr>
+        <tr><td>DivideByZeroException</td><td>Divisione per zero</td></tr>
+        <tr><td>ArgumentException</td><td>Argomento non valido</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>9. Static &amp; Object Initializer</h3><div class="topic-sub">static class, membri statici, singleton, object initializer</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// static class — si usa senza new:</span>
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Matematica</span> {
+    <span class="kw">public</span> <span class="kw">static</span> <span class="ty">double</span> PI = <span class="num">3.14159</span>;
+    <span class="kw">public</span> <span class="kw">static</span> <span class="ty">int</span> <span class="fn">Quadrato</span>(<span class="ty">int</span> n) => n * n;
+}
+Console.<span class="fn">WriteLine</span>(Matematica.PI);
+Console.<span class="fn">WriteLine</span>(Matematica.<span class="fn">Quadrato</span>(<span class="num">5</span>));  <span class="cm">// 25</span>
+
+<span class="cm">// Membro statico in una classe normale — condiviso tra tutte le istanze:</span>
+<span class="kw">class</span> <span class="ty">Contatore</span> {
+    <span class="kw">public</span> <span class="kw">static</span> <span class="ty">int</span> Totale = <span class="num">0</span>;
+    <span class="kw">public</span> <span class="fn">Contatore</span>() { Totale++; }
+}
+<span class="kw">new</span> Contatore(); <span class="kw">new</span> Contatore();
+Console.<span class="fn">WriteLine</span>(Contatore.Totale);  <span class="cm">// 2</span>
+
+<span class="cm">// Object Initializer:</span>
+Persona p = <span class="kw">new</span> Persona { Nome = <span class="str">"Marco"</span>, Eta = <span class="num">25</span> };
+<span class="cm">// equivale a: new Persona(); p.Nome = "Marco"; p.Eta = 25;</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>10. is, as, typeof — Type Checking</h3><div class="topic-sub">Verificare e convertire tipi a runtime</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// is — controlla se un oggetto è di un tipo:</span>
+<span class="kw">if</span> (animale <span class="kw">is</span> Cane) Console.<span class="fn">WriteLine</span>(<span class="str">"È un cane!"</span>);
+
+<span class="cm">// is con pattern variable (C# 7+):</span>
+<span class="kw">if</span> (animale <span class="kw">is</span> Cane cane) {
+    cane.<span class="fn">FaiVerso</span>();  <span class="cm">// usa direttamente come Cane</span>
+}
+
+<span class="cm">// as — cast sicuro, restituisce null se fallisce:</span>
+Cane? cane = animale <span class="kw">as</span> Cane;
+<span class="kw">if</span> (cane != <span class="kw">null</span>) cane.<span class="fn">FaiVerso</span>();
+
+<span class="cm">// typeof — tipo in fase di compilazione:</span>
+Console.<span class="fn">WriteLine</span>(<span class="kw">typeof</span>(<span class="ty">int</span>));     <span class="cm">// System.Int32</span>
+Console.<span class="fn">WriteLine</span>(<span class="kw">typeof</span>(Persona)); <span class="cm">// namespace.Persona</span>
+
+<span class="cm">// GetType() — tipo in fase di esecuzione:</span>
+Console.<span class="fn">WriteLine</span>(p.<span class="fn">GetType</span>());     <span class="cm">// tipo reale dell'istanza</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- MOD III -->
+<div class="section"
+</div>
+
+<div class="section" id="section-mod3">
+  <div class="section-title">III — File <span class="tag">MOD III</span></div>
+<div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. File di Testo</h3><div class="topic-sub">File.ReadAllText, WriteAllText, AppendAllText, ReadAllLines</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.IO;
+
+<span class="cm">// Scrittura (sovrascrive o crea):</span>
+File.<span class="fn">WriteAllText</span>(<span class="str">"note.txt"</span>, <span class="str">"Ciao Mondo!"</span>);
+
+<span class="cm">// Scrivere più righe:</span>
+<span class="ty">string</span>[] righe = { <span class="str">"Riga 1"</span>, <span class="str">"Riga 2"</span>, <span class="str">"Riga 3"</span> };
+File.<span class="fn">WriteAllLines</span>(<span class="str">"note.txt"</span>, righe);
+
+<span class="cm">// Aggiungere in fondo (append):</span>
+File.<span class="fn">AppendAllText</span>(<span class="str">"note.txt"</span>, <span class="str">"\nNuova riga"</span>);
+
+<span class="cm">// Lettura:</span>
+<span class="ty">string</span> testo = File.<span class="fn">ReadAllText</span>(<span class="str">"note.txt"</span>);
+<span class="ty">string</span>[] tutteLeRighe = File.<span class="fn">ReadAllLines</span>(<span class="str">"note.txt"</span>);
+
+<span class="cm">// Utilità:</span>
+File.<span class="fn">Exists</span>(<span class="str">"note.txt"</span>);    <span class="cm">// true/false</span>
+File.<span class="fn">Delete</span>(<span class="str">"note.txt"</span>);    <span class="cm">// elimina</span>
+File.<span class="fn">Copy</span>(<span class="str">"src.txt"</span>, <span class="str">"dst.txt"</span>); <span class="cm">// copia</span>
+File.<span class="fn">Move</span>(<span class="str">"old.txt"</span>, <span class="str">"new.txt"</span>); <span class="cm">// sposta/rinomina</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. StreamReader &amp; StreamWriter</h3><div class="topic-sub">Lettura/scrittura riga per riga, encoding, using</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.IO;
+<span class="kw">using</span> System.Text;
+
+<span class="cm">// Scrittura con StreamWriter:</span>
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> StreamWriter(<span class="str">"dati.txt"</span>)) {
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Prima riga"</span>);
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Seconda riga"</span>);
+}  <span class="cm">// il using chiude automaticamente lo stream!</span>
+
+<span class="cm">// Append (aggiunta in fondo):</span>
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> StreamWriter(<span class="str">"dati.txt"</span>, append: <span class="kw">true</span>))
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Riga aggiunta"</span>);
+
+<span class="cm">// Lettura con StreamReader:</span>
+<span class="kw">using</span> (StreamReader sr = <span class="kw">new</span> StreamReader(<span class="str">"dati.txt"</span>)) {
+    <span class="ty">string</span> riga;
+    <span class="kw">while</span> ((riga = sr.<span class="fn">ReadLine</span>()) != <span class="kw">null</span>)
+        Console.<span class="fn">WriteLine</span>(riga);
+}
+
+<span class="cm">// Con encoding UTF-8 (per caratteri speciali/accentati):</span>
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> StreamWriter(<span class="str">"file.txt"</span>, <span class="kw">false</span>, Encoding.UTF8))
+    sw.<span class="fn">WriteLine</span>(<span class="str">"Testo con accenti: à è ì ò ù"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. JSON</h3><div class="topic-sub">JsonSerializer.Serialize / Deserialize, opzioni, attributi</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.Text.Json;
+
+<span class="kw">class</span> <span class="ty">Studente</span> {
+    <span class="kw">public</span> <span class="ty">string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="ty">int</span>    Eta  { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cm">// Oggetto → JSON:</span>
+Studente s = <span class="kw">new</span> Studente { Nome = <span class="str">"Marco"</span>, Eta = <span class="num">20</span> };
+<span class="ty">string</span> json = JsonSerializer.<span class="fn">Serialize</span>(s);
+<span class="cm">// {"Nome":"Marco","Eta":20}</span>
+
+<span class="cm">// Con formattazione leggibile:</span>
+<span class="kw">var</span> opzioni = <span class="kw">new</span> JsonSerializerOptions { WriteIndented = <span class="kw">true</span> };
+<span class="ty">string</span> jsonBello = JsonSerializer.<span class="fn">Serialize</span>(s, opzioni);
+
+<span class="cm">// JSON → Oggetto:</span>
+Studente letto = JsonSerializer.<span class="fn">Deserialize</span>&lt;Studente&gt;(json);
+
+<span class="cm">// Salvare/caricare da file:</span>
+File.<span class="fn">WriteAllText</span>(<span class="str">"studente.json"</span>, jsonBello);
+<span class="ty">string</span> jsonDaFile = File.<span class="fn">ReadAllText</span>(<span class="str">"studente.json"</span>);
+Studente daFile = JsonSerializer.<span class="fn">Deserialize</span>&lt;Studente&gt;(jsonDaFile);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. XML</h3><div class="topic-sub">XmlSerializer, XDocument, LINQ to XML</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.Xml.Serialization;
+<span class="kw">using</span> System.IO;
+
+[Serializable]
+<span class="kw">public</span> <span class="kw">class</span> <span class="ty">Prodotto</span> {
+    <span class="kw">public</span> <span class="ty">string</span> Nome    { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="ty">double</span> Prezzo  { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+
+<span class="cm">// Oggetto → XML:</span>
+Prodotto p = <span class="kw">new</span> Prodotto { Nome = <span class="str">"Laptop"</span>, Prezzo = <span class="num">999.99</span> };
+XmlSerializer ser = <span class="kw">new</span> XmlSerializer(<span class="kw">typeof</span>(Prodotto));
+<span class="kw">using</span> (StreamWriter sw = <span class="kw">new</span> StreamWriter(<span class="str">"p.xml"</span>))
+    ser.<span class="fn">Serialize</span>(sw, p);
+
+<span class="cm">// XML → Oggetto:</span>
+<span class="kw">using</span> (StreamReader sr = <span class="kw">new</span> StreamReader(<span class="str">"p.xml"</span>))
+    Prodotto letto = (Prodotto)ser.<span class="fn">Deserialize</span>(sr);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. Eccezioni I/O</h3><div class="topic-sub">FileNotFoundException, IOException, pattern using + try/catch</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <table>
+        <tr><th>Eccezione</th><th>Causa</th></tr>
+        <tr><td>FileNotFoundException</td><td>File non trovato</td></tr>
+        <tr><td>DirectoryNotFoundException</td><td>Directory non trovata</td></tr>
+        <tr><td>IOException</td><td>Errore generico I/O</td></tr>
+        <tr><td>UnauthorizedAccessException</td><td>Permessi insufficienti</td></tr>
+      </table>
+      <pre><span class="kw">static</span> <span class="ty">string</span> <span class="fn">LeggiFile</span>(<span class="ty">string</span> percorso) {
+    <span class="kw">try</span> { <span class="kw">return</span> File.<span class="fn">ReadAllText</span>(percorso); }
+    <span class="kw">catch</span> (FileNotFoundException) {
+        Console.<span class="fn">WriteLine</span>(<span class="str">"File non trovato!"</span>); <span class="kw">return</span> <span class="kw">null</span>;
+    }
+    <span class="kw">catch</span> (IOException ex) {
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"Errore I/O: {ex.Message}"</span>); <span class="kw">return</span> <span class="kw">null</span>;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Dictionary&lt;K,V&gt;</h3><div class="topic-sub">Chiave-valore, ContainsKey, TryGetValue, iterazione</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.Collections.Generic;
+
+Dictionary&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; eta = <span class="kw">new</span>() {
+    { <span class="str">"Marco"</span>, <span class="num">25</span> },
+    { <span class="str">"Giulia"</span>, <span class="num">30</span> }
+};
+
+<span class="cm">// Aggiungere / modificare:</span>
+eta[<span class="str">"Luca"</span>] = <span class="num">22</span>;    <span class="cm">// aggiunge</span>
+eta[<span class="str">"Marco"</span>] = <span class="num">26</span>; <span class="cm">// modifica</span>
+
+<span class="cm">// Leggere:</span>
+Console.<span class="fn">WriteLine</span>(eta[<span class="str">"Giulia"</span>]);  <span class="cm">// 30</span>
+
+<span class="cm">// Accesso sicuro (evita KeyNotFoundException):</span>
+<span class="kw">if</span> (eta.<span class="fn">ContainsKey</span>(<span class="str">"Sara"</span>)) Console.<span class="fn">WriteLine</span>(eta[<span class="str">"Sara"</span>]);
+<span class="kw">if</span> (eta.<span class="fn">TryGetValue</span>(<span class="str">"Marco"</span>, <span class="kw">out int</span> valore)) Console.<span class="fn">WriteLine</span>(valore);
+
+<span class="cm">// Rimuovere:</span>
+eta.<span class="fn">Remove</span>(<span class="str">"Luca"</span>);
+
+<span class="cm">// Iterare:</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> coppia <span class="kw">in</span> eta)
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{coppia.Key} ha {coppia.Value} anni"</span>);</pre>
+      <table>
+        <tr><th></th><th>List&lt;T&gt;</th><th>Dictionary&lt;K,V&gt;</th></tr>
+        <tr><td>Accesso</td><td>Per indice [0]</td><td>Per chiave ["nome"]</td></tr>
+        <tr><td>Duplicati</td><td>Ammessi</td><td>Chiavi uniche</td></tr>
+        <tr><td>Usalo per</td><td>Liste ordinate</td><td>Ricerca per chiave</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7. Classe Path</h3><div class="topic-sub">Path.Combine, GetFileName, GetExtension, GetDirectoryName</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.IO;
+
+<span class="ty">string</span> path = Path.<span class="fn">Combine</span>(<span class="str">"C:\\Users"</span>, <span class="str">"Marco"</span>, <span class="str">"doc.txt"</span>);
+<span class="cm">// → C:\Users\Marco\doc.txt</span>
+
+Path.<span class="fn">GetFileName</span>(path);                 <span class="cm">// "doc.txt"</span>
+Path.<span class="fn">GetFileNameWithoutExtension</span>(path);  <span class="cm">// "doc"</span>
+Path.<span class="fn">GetExtension</span>(path);                <span class="cm">// ".txt"</span>
+Path.<span class="fn">GetDirectoryName</span>(path);            <span class="cm">// "C:\Users\Marco"</span>
+Path.<span class="fn">GetFullPath</span>(<span class="str">"note.txt"</span>);           <span class="cm">// percorso assoluto completo</span>
+Path.<span class="fn">GetTempPath</span>();                     <span class="cm">// cartella temp del sistema</span>
+Path.<span class="fn">ChangeExtension</span>(path, <span class="str">".pdf"</span>);    <span class="cm">// "C:\Users\Marco\doc.pdf"</span></pre>
+      <div class="tip">Usa sempre Path.Combine invece di concatenare con \ — funziona su Windows, Mac e Linux!</div>
+    </div>
+  </div>
+</div>
+
+<!-- MOD IV -->
+<div class="section"
+</div>
+
+<div class="section" id="section-mod4">
+  <div class="section-title">IV — Avanzato <span class="tag">MOD IV</span></div>
+<div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. LINQ</h3><div class="topic-sub">Where, Select, OrderBy, GroupBy, First, Count, Sum, Any, All</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>LINQ (Language Integrated Query) permette di interrogare collezioni come se fossero database.</p>
+      <pre><span class="kw">using</span> System.Linq;
+
+List&lt;<span class="ty">int</span>&gt; numeri = <span class="kw">new</span>() { <span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>,<span class="num">6</span>,<span class="num">7</span>,<span class="num">8</span>,<span class="num">9</span>,<span class="num">10</span> };
+
+<span class="cm">// Where — filtra:</span>
+<span class="kw">var</span> pari = numeri.<span class="fn">Where</span>(n => n % <span class="num">2</span> == <span class="num">0</span>);  <span class="cm">// 2,4,6,8,10</span>
+
+<span class="cm">// Select — trasforma:</span>
+<span class="kw">var</span> quadrati = numeri.<span class="fn">Select</span>(n => n * n);   <span class="cm">// 1,4,9,16…</span>
+
+<span class="cm">// OrderBy / OrderByDescending:</span>
+<span class="kw">var</span> ordinati = numeri.<span class="fn">OrderByDescending</span>(n => n);
+
+<span class="cm">// First / FirstOrDefault:</span>
+<span class="ty">int</span> primo = numeri.<span class="fn">First</span>(n => n > <span class="num">5</span>);   <span class="cm">// 6 (lancia eccezione se non trovato)</span>
+<span class="ty">int</span> safe  = numeri.<span class="fn">FirstOrDefault</span>(n => n > <span class="num">100</span>);  <span class="cm">// 0 (default)</span>
+
+<span class="cm">// Aggregazioni:</span>
+<span class="ty">int</span> somma = numeri.<span class="fn">Sum</span>();
+<span class="ty">double</span> media = numeri.<span class="fn">Average</span>();
+<span class="ty">int</span> max = numeri.<span class="fn">Max</span>();
+<span class="ty">int</span> conteggio = numeri.<span class="fn">Count</span>(n => n > <span class="num">5</span>);
+
+<span class="cm">// Any / All:</span>
+<span class="ty">bool</span> haNegativi = numeri.<span class="fn">Any</span>(n => n < <span class="num">0</span>);   <span class="cm">// false</span>
+<span class="ty">bool</span> tuttiPos   = numeri.<span class="fn">All</span>(n => n > <span class="num">0</span>);   <span class="cm">// true</span>
+
+<span class="cm">// Concatenazione:</span>
+<span class="kw">var</span> risultato = numeri
+    .<span class="fn">Where</span>(n => n % <span class="num">2</span> == <span class="num">0</span>)
+    .<span class="fn">Select</span>(n => n * <span class="num">10</span>)
+    .<span class="fn">OrderBy</span>(n => n)
+    .<span class="fn">ToList</span>();
+
+<span class="cm">// GroupBy:</span>
+<span class="kw">var</span> gruppi = numeri.<span class="fn">GroupBy</span>(n => n % <span class="num">2</span> == <span class="num">0</span> ? <span class="str">"pari"</span> : <span class="str">"dispari"</span>);
+<span class="kw">foreach</span> (<span class="kw">var</span> g <span class="kw">in</span> gruppi)
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{g.Key}: {string.Join(", ", g)}"</span>);
+
+<span class="cm">// Sintassi query (alternativa):</span>
+<span class="kw">var</span> query = <span class="kw">from</span> n <span class="kw">in</span> numeri
+            <span class="kw">where</span> n > <span class="num">5</span>
+            <span class="kw">orderby</span> n
+            <span class="kw">select</span> n;</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. Generics &lt;T&gt;</h3><div class="topic-sub">Classi e metodi generici, constraints where T:</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Metodo generico — funziona con qualsiasi tipo:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>&lt;T&gt;(T valore) =>
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Valore: {valore} (tipo: {typeof(T).Name})"</span>);
+
+<span class="fn">Stampa</span>(<span class="num">42</span>);        <span class="cm">// int</span>
+<span class="fn">Stampa</span>(<span class="str">"Ciao"</span>);   <span class="cm">// string</span>
+<span class="fn">Stampa</span>(<span class="num">3.14</span>);     <span class="cm">// double</span>
+
+<span class="cm">// Classe generica:</span>
+<span class="kw">class</span> <span class="ty">Scatola</span>&lt;T&gt; {
+    <span class="kw">public</span> T Contenuto { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="fn">Scatola</span>(T contenuto) { Contenuto = contenuto; }
+    <span class="kw">public</span> <span class="ty">string</span> <span class="fn">Descrivi</span>() => <span class="str">$"Contiene: {Contenuto}"</span>;
+}
+
+Scatola&lt;<span class="ty">int</span>&gt;    s1 = <span class="kw">new</span>(<span class="num">42</span>);
+Scatola&lt;<span class="ty">string</span>&gt; s2 = <span class="kw">new</span>(<span class="str">"Ciao"</span>);
+
+<span class="cm">// Constraints — limitare il tipo:</span>
+<span class="kw">static</span> T <span class="fn">Massimo</span>&lt;T&gt;(T a, T b) <span class="kw">where</span> T : IComparable&lt;T&gt;
+    => a.CompareTo(b) > <span class="num">0</span> ? a : b;
+
+<span class="fn">Massimo</span>(<span class="num">3</span>, <span class="num">7</span>);        <span class="cm">// 7</span>
+<span class="fn">Massimo</span>(<span class="str">"abc"</span>, <span class="str">"xyz"</span>); <span class="cm">// "xyz"</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. Delegates &amp; Events</h3><div class="topic-sub">delegate, Func, Action, Predicate, event</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Delegate — puntatore a un metodo:</span>
+<span class="kw">delegate</span> <span class="ty">int</span> Operazione(<span class="ty">int</span> a, <span class="ty">int</span> b);
+
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">Somma</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) => a + b;
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">Prodotto</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) => a * b;
+
+Operazione op = Somma;
+Console.<span class="fn">WriteLine</span>(op(<span class="num">3</span>, <span class="num">4</span>));   <span class="cm">// 7</span>
+op = Prodotto;
+Console.<span class="fn">WriteLine</span>(op(<span class="num">3</span>, <span class="num">4</span>));   <span class="cm">// 12</span>
+
+<span class="cm">// Func&lt;...&gt; — delegate che restituisce un valore:</span>
+Func&lt;<span class="ty">int</span>, <span class="ty">int</span>, <span class="ty">int</span>&gt; somma = (a, b) => a + b;
+Func&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt;   lunghezza = s => s.Length;
+
+<span class="cm">// Action&lt;...&gt; — delegate void:</span>
+Action&lt;<span class="ty">string</span>&gt; stampa = s => Console.<span class="fn">WriteLine</span>(s);
+stampa(<span class="str">"Ciao!"</span>);
+
+<span class="cm">// Predicate&lt;T&gt; — delegate che restituisce bool:</span>
+Predicate&lt;<span class="ty">int</span>&gt; ePari = n => n % <span class="num">2</span> == <span class="num">0</span>;
+
+<span class="cm">// Event:</span>
+<span class="kw">class</span> <span class="ty">Bottone</span> {
+    <span class="kw">public</span> <span class="kw">event</span> Action Click;
+    <span class="kw">public</span> <span class="ty">void</span> <span class="fn">Premi</span>() => Click?.Invoke();
+}
+Bottone b = <span class="kw">new</span>();
+b.Click += () => Console.<span class="fn">WriteLine</span>(<span class="str">"Cliccato!"</span>);
+b.<span class="fn">Premi</span>();</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. Lambda &amp; Closures</h3><div class="topic-sub">Espressioni lambda, variabili catturate, metodi anonimi</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Sintassi lambda:</span>
+<span class="cm">// (parametri) => espressione</span>
+<span class="cm">// (parametri) => { blocco di codice }</span>
+
+Func&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; quadrato = x => x * x;
+Func&lt;<span class="ty">int</span>, <span class="ty">int</span>, <span class="ty">int</span>&gt; somma = (a, b) => a + b;
+Action saluta = () => Console.<span class="fn">WriteLine</span>(<span class="str">"Ciao!"</span>);
+
+<span class="cm">// Lambda con corpo:</span>
+Func&lt;<span class="ty">int</span>, <span class="ty">string</span>&gt; classifica = n => {
+    <span class="kw">if</span> (n >= <span class="num">90</span>) <span class="kw">return</span> <span class="str">"Ottimo"</span>;
+    <span class="kw">if</span> (n >= <span class="num">60</span>) <span class="kw">return</span> <span class="str">"Sufficiente"</span>;
+    <span class="kw">return</span> <span class="str">"Insufficiente"</span>;
+};
+
+<span class="cm">// Closure — cattura variabile esterna:</span>
+<span class="ty">int</span> moltiplicatore = <span class="num">3</span>;
+Func&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; moltiplica = n => n * moltiplicatore;
+Console.<span class="fn">WriteLine</span>(moltiplica(<span class="num">5</span>));  <span class="cm">// 15</span>
+moltiplicatore = <span class="num">10</span>;
+Console.<span class="fn">WriteLine</span>(moltiplica(<span class="num">5</span>));  <span class="cm">// 50 ← usa il valore aggiornato!</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. async / await</h3><div class="topic-sub">Task, async, await, Task.WhenAll, Task.WhenAny</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.Threading.Tasks;
+
+<span class="cm">// Metodo asincrono — non blocca il thread:</span>
+<span class="kw">static</span> <span class="kw">async</span> Task&lt;<span class="ty">string</span>&gt; <span class="fn">ScaricaDati</span>() {
+    <span class="kw">await</span> Task.<span class="fn">Delay</span>(<span class="num">2000</span>);  <span class="cm">// simula attesa 2 secondi</span>
+    <span class="kw">return</span> <span class="str">"Dati scaricati!"</span>;
+}
+
+<span class="cm">// Chiamata:</span>
+<span class="kw">static</span> <span class="kw">async</span> Task <span class="fn">Main</span>(<span class="ty">string</span>[] args) {
+    Console.<span class="fn">WriteLine</span>(<span class="str">"Inizio..."</span>);
+    <span class="ty">string</span> risultato = <span class="kw">await</span> <span class="fn">ScaricaDati</span>();
+    Console.<span class="fn">WriteLine</span>(risultato);
+}
+
+<span class="cm">// Task.WhenAll — esegue più task in parallelo:</span>
+Task&lt;<span class="ty">string</span>&gt; t1 = <span class="fn">ScaricaDati</span>();
+Task&lt;<span class="ty">string</span>&gt; t2 = <span class="fn">ScaricaDati</span>();
+<span class="ty">string</span>[] risultati = <span class="kw">await</span> Task.<span class="fn">WhenAll</span>(t1, t2);
+
+<span class="cm">// void async (per event handler):</span>
+<span class="kw">async</span> <span class="ty">void</span> <span class="fn">OnClick</span>() {
+    <span class="kw">await</span> Task.<span class="fn">Delay</span>(<span class="num">1000</span>);
+    Console.<span class="fn">WriteLine</span>(<span class="str">"Fatto!"</span>);
+}</pre>
+      <table>
+        <tr><th>Tipo di ritorno</th><th>Usa quando</th></tr>
+        <tr><td>Task</td><td>Metodo async void (operazioni)</td></tr>
+        <tr><td>Task&lt;T&gt;</td><td>Metodo async che restituisce T</td></tr>
+        <tr><td>async void</td><td>Solo per event handler</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. DateTime &amp; TimeSpan</h3><div class="topic-sub">Now, Today, Parse, Format, Add, differenza tra date</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Ottenere la data/ora corrente:</span>
+DateTime ora  = DateTime.Now;    <span class="cm">// data e ora locali</span>
+DateTime oggi = DateTime.Today;  <span class="cm">// solo data (ora = 00:00:00)</span>
+DateTime utc  = DateTime.UtcNow; <span class="cm">// UTC</span>
+
+<span class="cm">// Creare una data specifica:</span>
+DateTime natale = <span class="kw">new</span> DateTime(<span class="num">2025</span>, <span class="num">12</span>, <span class="num">25</span>);
+DateTime precisa = <span class="kw">new</span> DateTime(<span class="num">2025</span>, <span class="num">12</span>, <span class="num">25</span>, <span class="num">18</span>, <span class="num">30</span>, <span class="num">0</span>); <span class="cm">// 18:30:00</span>
+
+<span class="cm">// Formattazione:</span>
+Console.<span class="fn">WriteLine</span>(ora.<span class="fn">ToString</span>(<span class="str">"dd/MM/yyyy"</span>));        <span class="cm">// 25/12/2025</span>
+Console.<span class="fn">WriteLine</span>(ora.<span class="fn">ToString</span>(<span class="str">"HH:mm:ss"</span>));           <span class="cm">// 18:30:00</span>
+Console.<span class="fn">WriteLine</span>(ora.<span class="fn">ToString</span>(<span class="str">"dd/MM/yyyy HH:mm"</span>));  <span class="cm">// 25/12/2025 18:30</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Oggi è {ora:dddd d MMMM yyyy}"</span>);   <span class="cm">// Giovedì 25 Dicembre 2025</span>
+
+<span class="cm">// Aggiungere/sottrarre tempo:</span>
+DateTime domani     = oggi.<span class="fn">AddDays</span>(<span class="num">1</span>);
+DateTime settimana  = oggi.<span class="fn">AddDays</span>(<span class="num">7</span>);
+DateTime mesePrima  = oggi.<span class="fn">AddMonths</span>(-<span class="num">1</span>);
+DateTime tra2ore    = ora.<span class="fn">AddHours</span>(<span class="num">2</span>);
+
+<span class="cm">// Proprietà:</span>
+Console.<span class="fn">WriteLine</span>(ora.Year);        <span class="cm">// 2025</span>
+Console.<span class="fn">WriteLine</span>(ora.Month);       <span class="cm">// 12</span>
+Console.<span class="fn">WriteLine</span>(ora.Day);         <span class="cm">// 25</span>
+Console.<span class="fn">WriteLine</span>(ora.DayOfWeek);   <span class="cm">// Thursday</span>
+
+<span class="cm">// TimeSpan — differenza tra date:</span>
+TimeSpan diff = natale - oggi;
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Giorni a Natale: {diff.Days}"</span>);
+
+<span class="cm">// Parse:</span>
+DateTime d = DateTime.<span class="fn">Parse</span>(<span class="str">"25/12/2025"</span>);
+<span class="ty">bool</span> ok = DateTime.<span class="fn">TryParse</span>(<span class="str">"abc"</span>, <span class="kw">out</span> DateTime result);</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>7. StringBuilder</h3><div class="topic-sub">Append, Insert, Replace, Remove — performance per stringhe lunghe</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <p>Le stringhe normali sono <strong>immutabili</strong> — ogni += crea una nuova stringa. StringBuilder modifica il buffer direttamente, molto più efficiente per molte concatenazioni.</p>
+      <pre><span class="kw">using</span> System.Text;
+
+StringBuilder sb = <span class="kw">new</span> StringBuilder();
+sb.<span class="fn">Append</span>(<span class="str">"Ciao"</span>);
+sb.<span class="fn">Append</span>(<span class="str">" "</span>);
+sb.<span class="fn">Append</span>(<span class="str">"Mondo"</span>);
+sb.<span class="fn">AppendLine</span>(<span class="str">"!"</span>);         <span class="cm">// aggiunge + \n</span>
+sb.<span class="fn">Insert</span>(<span class="num">0</span>, <span class="str">">>> "</span>);       <span class="cm">// inserisce in posizione 0</span>
+sb.<span class="fn">Replace</span>(<span class="str">"Mondo"</span>, <span class="str">"Italia"</span>); <span class="cm">// sostituisce</span>
+sb.<span class="fn">Remove</span>(<span class="num">0</span>, <span class="num">4</span>);             <span class="cm">// rimuove 4 caratteri da posizione 0</span>
+Console.<span class="fn">WriteLine</span>(sb.Length); <span class="cm">// lunghezza buffer</span>
+<span class="ty">string</span> risultato = sb.<span class="fn">ToString</span>(); <span class="cm">// converte in stringa</span>
+sb.<span class="fn">Clear</span>();                   <span class="cm">// svuota</span></pre>
+      <div class="warn">Per meno di ~10 concatenazioni, usa += normale. StringBuilder conviene per loop con molte operazioni.</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>8. Random &amp; Utilità</h3><div class="topic-sub">Random, Next, NextDouble, Shuffle, Math completa</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Random:</span>
+Random rnd = <span class="kw">new</span> Random();
+<span class="ty">int</span>    n1 = rnd.<span class="fn">Next</span>();           <span class="cm">// numero casuale qualsiasi</span>
+<span class="ty">int</span>    n2 = rnd.<span class="fn">Next</span>(<span class="num">10</span>);         <span class="cm">// 0–9</span>
+<span class="ty">int</span>    n3 = rnd.<span class="fn">Next</span>(<span class="num">1</span>, <span class="num">101</span>);     <span class="cm">// 1–100</span>
+<span class="ty">double</span> d  = rnd.<span class="fn">NextDouble</span>();     <span class="cm">// 0.0–1.0</span>
+
+<span class="cm">// Random con seed (stessa sequenza):</span>
+Random rndFisso = <span class="kw">new</span> Random(<span class="num">42</span>);
+
+<span class="cm">// Mescolare una lista:</span>
+List&lt;<span class="ty">int</span>&gt; lista = <span class="kw">new</span>() { <span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span> };
+<span class="kw">var</span> mescolata = lista.<span class="fn">OrderBy</span>(_ => rnd.<span class="fn">Next</span>()).<span class="fn">ToList</span>();
+
+<span class="cm">// Scegliere elemento casuale:</span>
+<span class="ty">string</span>[] nomi = { <span class="str">"Marco"</span>, <span class="str">"Giulia"</span>, <span class="str">"Luca"</span> };
+<span class="ty">string</span> casuale = nomi[rnd.<span class="fn">Next</span>(nomi.Length)];</pre>
+    </div>
+  </div>
+</div>
+
+<!-- MOD V -->
+<div class="section"
+</div>
+
+<div class="section" id="section-mod5">
+  <div class="section-title">V — Extra <span class="tag">MOD V</span></div>
+<div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>1. Tuple &amp; ValueTuple</h3><div class="topic-sub">Ritorno multiplo, named tuples, decostruzione</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Tuple — restituire più valori da un metodo:</span>
+<span class="kw">static</span> (int min, int max) <span class="fn">TrovaMinMax</span>(<span class="ty">int</span>[] arr) {
+    <span class="kw">return</span> (arr.<span class="fn">Min</span>(), arr.<span class="fn">Max</span>());
+}
+
+<span class="ty">int</span>[] numeri = { <span class="num">3</span>, <span class="num">1</span>, <span class="num">7</span>, <span class="num">2</span>, <span class="num">9</span> };
+<span class="kw">var</span> (min, max) = <span class="fn">TrovaMinMax</span>(numeri);  <span class="cm">// decostruzione</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Min: {min}, Max: {max}"</span>);
+
+<span class="cm">// Named tuple:</span>
+(<span class="ty">string</span> Nome, <span class="ty">int</span> Eta) persona = (<span class="str">"Marco"</span>, <span class="num">25</span>);
+Console.<span class="fn">WriteLine</span>(persona.Nome);  <span class="cm">// "Marco"</span>
+Console.<span class="fn">WriteLine</span>(persona.Eta);   <span class="cm">// 25</span>
+
+<span class="cm">// Tuple anonima:</span>
+<span class="kw">var</span> t = (<span class="num">1</span>, <span class="str">"ciao"</span>, <span class="kw">true</span>);
+Console.<span class="fn">WriteLine</span>(t.Item1);  <span class="cm">// 1</span>
+Console.<span class="fn">WriteLine</span>(t.Item2);  <span class="cm">// "ciao"</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>2. Pattern Matching</h3><div class="topic-sub">switch expression avanzata, is, when, positional patterns</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Pattern con is:</span>
+<span class="kw">if</span> (obj <span class="kw">is</span> <span class="ty">int</span> n && n > <span class="num">0</span>) Console.<span class="fn">WriteLine</span>(<span class="str">$"Intero positivo: {n}"</span>);
+<span class="kw">if</span> (obj <span class="kw">is</span> <span class="ty">string</span> s && s.Length > <span class="num">5</span>) Console.<span class="fn">WriteLine</span>(<span class="str">$"Stringa lunga: {s}"</span>);
+<span class="kw">if</span> (obj <span class="kw">is</span> <span class="kw">null</span>) Console.<span class="fn">WriteLine</span>(<span class="str">"È null"</span>);
+<span class="kw">if</span> (obj <span class="kw">is not</span> <span class="kw">null</span>) Console.<span class="fn">WriteLine</span>(<span class="str">"Non è null"</span>);
+
+<span class="cm">// switch expression con pattern:</span>
+<span class="ty">string</span> Descrivi(object obj) => obj <span class="kw">switch</span> {
+    <span class="ty">int</span> n <span class="kw">when</span> n < <span class="num">0</span>   => <span class="str">"negativo"</span>,
+    <span class="ty">int</span> n <span class="kw">when</span> n == <span class="num">0</span>  => <span class="str">"zero"</span>,
+    <span class="ty">int</span> n               => <span class="str">$"positivo {n}"</span>,
+    <span class="ty">string</span> s            => <span class="str">$"stringa: {s}"</span>,
+    <span class="kw">null</span>                => <span class="str">"null"</span>,
+    _                   => <span class="str">"altro"</span>
+};
+
+<span class="cm">// Range pattern (C# 9+):</span>
+<span class="ty">string</span> Giudizio(<span class="ty">int</span> voto) => voto <span class="kw">switch</span> {
+    >= <span class="num">90</span>         => <span class="str">"Ottimo"</span>,
+    >= <span class="num">75</span> <span class="kw">and</span> < <span class="num">90</span> => <span class="str">"Buono"</span>,
+    >= <span class="num">60</span>         => <span class="str">"Sufficiente"</span>,
+    _             => <span class="str">"Insufficiente"</span>
+};</pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>3. Record</h3><div class="topic-sub">Immutabilità, with expression, value equality (C# 9+)</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Record — tipo immutabile con uguaglianza per valore:</span>
+<span class="kw">record</span> <span class="ty">Persona</span>(<span class="ty">string</span> Nome, <span class="ty">int</span> Eta);
+
+Persona p1 = <span class="kw">new</span>(<span class="str">"Marco"</span>, <span class="num">25</span>);
+Persona p2 = <span class="kw">new</span>(<span class="str">"Marco"</span>, <span class="num">25</span>);
+
+Console.<span class="fn">WriteLine</span>(p1 == p2);     <span class="cm">// true! (valore, non riferimento)</span>
+Console.<span class="fn">WriteLine</span>(p1);           <span class="cm">// Persona { Nome = Marco, Eta = 25 }</span>
+
+<span class="cm">// with — crea una copia modificando alcuni valori:</span>
+Persona p3 = p1 <span class="kw">with</span> { Eta = <span class="num">30</span> };
+Console.<span class="fn">WriteLine</span>(p3);  <span class="cm">// Persona { Nome = Marco, Eta = 30 }</span>
+
+<span class="cm">// Record con corpo (aggiungere metodi):</span>
+<span class="kw">record</span> <span class="ty">Prodotto</span>(<span class="ty">string</span> Nome, <span class="ty">double</span> Prezzo) {
+    <span class="kw">public</span> <span class="ty">string</span> <span class="fn">Descrivi</span>() => <span class="str">$"{Nome}: €{Prezzo:F2}"</span>;
+}</pre>
+      <div class="note">Record sono ideali per DTO (Data Transfer Objects), modelli di dati, configurazioni — qualsiasi cosa che non deve cambiare dopo la creazione.</div>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>4. HashSet, Queue &amp; Stack</h3><div class="topic-sub">Collezioni specializzate, unicità, FIFO, LIFO</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <h4>HashSet — elementi unici</h4>
+      <pre>HashSet&lt;<span class="ty">string</span>&gt; hs = <span class="kw">new</span>() { <span class="str">"a"</span>, <span class="str">"b"</span>, <span class="str">"c"</span> };
+hs.<span class="fn">Add</span>(<span class="str">"a"</span>);         <span class="cm">// ignorato, già presente</span>
+hs.<span class="fn">Contains</span>(<span class="str">"b"</span>);   <span class="cm">// true — O(1)!</span>
+hs.<span class="fn">Remove</span>(<span class="str">"c"</span>);
+Console.<span class="fn">WriteLine</span>(hs.Count);  <span class="cm">// 2</span>
+
+<span class="cm">// Operazioni insiemistiche:</span>
+hs.<span class="fn">UnionWith</span>(altro);     <span class="cm">// unione</span>
+hs.<span class="fn">IntersectWith</span>(altro); <span class="cm">// intersezione</span>
+hs.<span class="fn">ExceptWith</span>(altro);    <span class="cm">// differenza</span></pre>
+      <h4>Queue — FIFO (primo entrato, primo uscito)</h4>
+      <pre>Queue&lt;<span class="ty">string</span>&gt; fila = <span class="kw">new</span>();
+fila.<span class="fn">Enqueue</span>(<span class="str">"primo"</span>);
+fila.<span class="fn">Enqueue</span>(<span class="str">"secondo"</span>);
+<span class="ty">string</span> prossimo = fila.<span class="fn">Dequeue</span>();   <span class="cm">// "primo" (ed è rimosso)</span>
+<span class="ty">string</span> spia     = fila.<span class="fn">Peek</span>();     <span class="cm">// "secondo" (non rimosso)</span></pre>
+      <h4>Stack — LIFO (ultimo entrato, primo uscito)</h4>
+      <pre>Stack&lt;<span class="ty">int</span>&gt; pila = <span class="kw">new</span>();
+pila.<span class="fn">Push</span>(<span class="num">1</span>); pila.<span class="fn">Push</span>(<span class="num">2</span>); pila.<span class="fn">Push</span>(<span class="num">3</span>);
+<span class="ty">int</span> cima = pila.<span class="fn">Pop</span>();   <span class="cm">// 3 (ed è rimosso)</span>
+<span class="ty">int</span> spia  = pila.<span class="fn">Peek</span>(); <span class="cm">// 2 (non rimosso)</span></pre>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>5. Regular Expressions (Regex)</h3><div class="topic-sub">IsMatch, Match, Replace, Groups</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <pre><span class="kw">using</span> System.Text.RegularExpressions;
+
+<span class="cm">// IsMatch — controlla se corrisponde:</span>
+<span class="ty">bool</span> eEmail = Regex.<span class="fn">IsMatch</span>(testo, <span class="str">@"^[\w.-]+@[\w.-]+\.\w+$"</span>);
+<span class="ty">bool</span> eNumero = Regex.<span class="fn">IsMatch</span>(testo, <span class="str">@"^\d+$"</span>);
+
+<span class="cm">// Match — trova prima corrispondenza:</span>
+Match m = Regex.<span class="fn">Match</span>(<span class="str">"Ciao Marco 123"</span>, <span class="str">@"\d+"</span>);
+<span class="kw">if</span> (m.Success) Console.<span class="fn">WriteLine</span>(m.Value);  <span class="cm">// "123"</span>
+
+<span class="cm">// Matches — tutte le corrispondenze:</span>
+MatchCollection mc = Regex.<span class="fn">Matches</span>(<span class="str">"uno1 due2 tre3"</span>, <span class="str">@"\d"</span>);
+<span class="kw">foreach</span> (Match match <span class="kw">in</span> mc) Console.<span class="fn">Write</span>(match.Value + <span class="str">" "</span>); <span class="cm">// 1 2 3</span>
+
+<span class="cm">// Replace:</span>
+<span class="ty">string</span> pulito = Regex.<span class="fn">Replace</span>(<span class="str">"Hello   World"</span>, <span class="str">@"\s+"</span>, <span class="str">" "</span>);  <span class="cm">// "Hello World"</span>
+
+<span class="cm">// Gruppi di cattura:</span>
+Match data = Regex.<span class="fn">Match</span>(<span class="str">"25/12/2025"</span>, <span class="str">@"(\d{2})/(\d{2})/(\d{4})"</span>);
+Console.<span class="fn">WriteLine</span>(data.Groups[<span class="num">1</span>].Value);  <span class="cm">// "25"</span>
+Console.<span class="fn">WriteLine</span>(data.Groups[<span class="num">3</span>].Value);  <span class="cm">// "2025"</span></pre>
+      <h4>Pattern comuni</h4>
+      <table>
+        <tr><th>Pattern</th><th>Significato</th></tr>
+        <tr><td>\d</td><td>cifra (0-9)</td></tr>
+        <tr><td>\w</td><td>parola (a-z, A-Z, 0-9, _)</td></tr>
+        <tr><td>\s</td><td>spazio bianco</td></tr>
+        <tr><td>.</td><td>qualsiasi carattere</td></tr>
+        <tr><td>*</td><td>0 o più volte</td></tr>
+        <tr><td>+</td><td>1 o più volte</td></tr>
+        <tr><td>^</td><td>inizio stringa</td></tr>
+        <tr><td>$</td><td>fine stringa</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>6. Preprocessore &amp; Attributi</h3><div class="topic-sub">#region, #if DEBUG, [Obsolete], [Serializable], [Conditional]</div></div><span class="arrow">▼</span></div>
+    <div class="topic-body">
+      <h4>Direttive del preprocessore</h4>
+      <pre><span class="cm">// #region — organizza il codice in blocchi espandibili:</span>
+<span class="kw">#region</span> Metodi di utilità
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MioMetodo</span>() { }
+<span class="kw">#endregion</span>
+
+<span class="cm">// #if — codice condizionale (solo in certi build):</span>
+<span class="kw">#if</span> DEBUG
+Console.<span class="fn">WriteLine</span>(<span class="str">"Modalità debug attiva"</span>);
+<span class="kw">#else</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">"Produzione"</span>);
+<span class="kw">#endif</span>
+
+<span class="cm">// #pragma — disabilita warning specifici:</span>
+<span class="kw">#pragma</span> warning disable CS0168
+<span class="ty">int</span> variabileNonUsata;
+<span class="kw">#pragma</span> warning restore CS0168</pre>
+      <h4>Attributi comuni</h4>
+      <pre><span class="cm">// [Obsolete] — marca come deprecato:</span>
+[Obsolete(<span class="str">"Usa NuovoMetodo() invece"</span>)]
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">VecchioMetodo</span>() { }
+
+<span class="cm">// [Serializable] — per serializzazione:</span>
+[Serializable]
+<span class="kw">class</span> <span class="ty">MiaClasse</span> { }
+
+<span class="cm">// [Conditional] — metodo chiamato solo in certi build:</span>
+[System.Diagnostics.Conditional(<span class="str">"DEBUG"</span>)]
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Log</span>(<span class="ty">string</span> msg) => Console.<span class="fn">WriteLine</span>(<span class="str">$"[LOG] {msg}"</span>);
+
+<span class="cm">// [JsonPropertyName] — per JSON:</span>
+[System.Text.Json.Serialization.JsonPropertyName(<span class="str">"nome_prodotto"</span>)]
+<span class="kw">public</span> <span class="ty">string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }</pre>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="section" id="section-mod6">
+  <div class="section-title">VI — Pro <span class="tag">MOD VI</span></div>
+<!-- 1. IDisposable & using -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>1. IDisposable &amp; using</h3><span class="topic-sub">Gestione risorse non gestite, pattern Dispose</span></div>
+    <div class="topic-body">
+      <div class="info">Implementa <b>IDisposable</b> per rilasciare risorse non gestite (file, connessioni DB, socket). Il blocco <code>using</code> chiama <code>Dispose()</code> automaticamente anche in caso di eccezione.</div>
+      <pre><span class="cm">// Implementare IDisposable:</span>
+<span class="kw">class</span> <span class="ty">RisorsaPersonalizzata</span> : IDisposable {
+  <span class="kw">private bool</span> _disposed = <span class="kw">false</span>;
+  <span class="kw">private</span> IntPtr _handle; <span class="cm">// risorsa non gestita</span>
+
+  <span class="kw">public void</span> <span class="fn">Dispose</span>() {
+    <span class="fn">Dispose</span>(<span class="kw">true</span>);
+    GC.<span class="fn">SuppressFinalize</span>(<span class="kw">this</span>);
+  }
+  <span class="kw">protected virtual void</span> <span class="fn">Dispose</span>(<span class="kw">bool</span> disposing) {
+    <span class="kw">if</span> (!_disposed) {
+      <span class="kw">if</span> (disposing) { <span class="cm">/* libera risorse gestite */</span> }
+      <span class="cm">// libera risorse non gestite qui</span>
+      _disposed = <span class="kw">true</span>;
+    }
+  }
+  ~<span class="ty">RisorsaPersonalizzata</span>() { <span class="fn">Dispose</span>(<span class="kw">false</span>); }
+}
+
+<span class="cm">// using — Dispose() chiamato automaticamente:</span>
+<span class="kw">using</span> (<span class="kw">var</span> r = <span class="kw">new</span> <span class="ty">RisorsaPersonalizzata</span>()) {
+  <span class="cm">// usa r</span>
+} <span class="cm">// r.Dispose() chiamato qui, anche se c'è eccezione</span>
+
+<span class="cm">// Sintassi moderna (C# 8+):</span>
+<span class="kw">using var</span> r = <span class="kw">new</span> <span class="ty">RisorsaPersonalizzata</span>();
+<span class="cm">// Dispose() chiamato alla fine dello scope</span>
+
+<span class="cm">// Più risorse:</span>
+<span class="kw">using var</span> sr = <span class="kw">new</span> <span class="ty">StreamReader</span>(<span class="str">"file.txt"</span>);
+<span class="kw">using var</span> sw = <span class="kw">new</span> <span class="ty">StreamWriter</span>(<span class="str">"out.txt"</span>);</pre>
+      <div class="warn">Regola: se una classe gestisce FileStream, SqlConnection, HttpClient o qualsiasi risorsa non gestita, implementa sempre IDisposable!</div>
+    </div>
+  </div>
+
+  <!-- 2. IEnumerable & yield -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>2. IEnumerable&lt;T&gt; &amp; yield</h3><span class="topic-sub">Iteratori personalizzati, lazy evaluation, yield return</span></div>
+    <div class="topic-body">
+      <div class="info"><code>IEnumerable&lt;T&gt;</code> è l'interfaccia alla base di foreach e LINQ. <code>yield return</code> permette di creare sequenze pigre senza costruire un'intera lista in memoria.</div>
+      <pre><span class="cm">// IEnumerable&lt;T&gt; — base di foreach e LINQ:</span>
+<span class="kw">IEnumerable</span>&lt;<span class="ty">int</span>&gt; numeri = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">int</span>&gt; { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span> };
+<span class="kw">foreach</span> (<span class="kw">int</span> n <span class="kw">in</span> numeri) Console.<span class="fn">WriteLine</span>(n);
+
+<span class="cm">// Iteratore con yield return (lazy — genera 1 per volta):</span>
+<span class="kw">static</span> <span class="ty">IEnumerable</span>&lt;<span class="ty">int</span>&gt; <span class="fn">Pari</span>(<span class="kw">int</span> max) {
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt;= max; i += <span class="num">2</span>)
+    <span class="kw">yield return</span> i; <span class="cm">// produce un valore e si ferma</span>
+}
+<span class="kw">foreach</span> (<span class="kw">int</span> p <span class="kw">in</span> <span class="fn">Pari</span>(<span class="num">10</span>)) Console.<span class="fn">Write</span>(p + <span class="str">" "</span>); <span class="cm">// 0 2 4 6 8 10</span>
+
+<span class="cm">// yield break — ferma l'iteratore:</span>
+<span class="kw">static</span> <span class="ty">IEnumerable</span>&lt;<span class="ty">int</span>&gt; <span class="fn">Finoa</span>(<span class="kw">int</span>[] arr, <span class="kw">int</span> stop) {
+  <span class="kw">foreach</span> (<span class="kw">var</span> n <span class="kw">in</span> arr) {
+    <span class="kw">if</span> (n == stop) <span class="kw">yield break</span>;
+    <span class="kw">yield return</span> n;
+  }
+}
+
+<span class="cm">// Classe iterabile personalizzata:</span>
+<span class="kw">class</span> <span class="ty">Intervallo</span> : IEnumerable&lt;<span class="ty">int</span>&gt; {
+  <span class="kw">int</span> _da, _a;
+  <span class="kw">public</span> <span class="ty">Intervallo</span>(<span class="kw">int</span> da, <span class="kw">int</span> a) { _da = da; _a = a; }
+  <span class="kw">public</span> <span class="ty">IEnumerator</span>&lt;<span class="ty">int</span>&gt; <span class="fn">GetEnumerator</span>() {
+    <span class="kw">for</span> (<span class="kw">int</span> i = _da; i &lt;= _a; i++) <span class="kw">yield return</span> i;
+  }
+  System.Collections.<span class="ty">IEnumerator</span> System.Collections.IEnumerable.<span class="fn">GetEnumerator</span>() =&gt; <span class="fn">GetEnumerator</span>();
+}
+<span class="kw">foreach</span> (<span class="kw">var</span> n <span class="kw">in</span> <span class="kw">new</span> <span class="ty">Intervallo</span>(<span class="num">1</span>, <span class="num">5</span>)) Console.<span class="fn">Write</span>(n + <span class="str">" "</span>); <span class="cm">// 1 2 3 4 5</span></pre>
+    </div>
+  </div>
+
+  <!-- 3. Extension Methods -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>3. Extension Methods</h3><span class="topic-sub">Aggiungere metodi a classi esistenti senza modificarle</span></div>
+    <div class="topic-body">
+      <div class="info">I metodi estensione permettono di aggiungere metodi a qualsiasi tipo — anche sealed o di libreria — senza ereditarietà. Devono stare in una classe <code>static</code> e il primo parametro usa <code>this</code>.</div>
+      <pre><span class="cm">// Classe statica con metodi estensione:</span>
+<span class="kw">static class</span> <span class="ty">StringExtensions</span> {
+  <span class="cm">// 'this string s' = si applica a string</span>
+  <span class="kw">public static string</span> <span class="fn">Capitalizza</span>(<span class="kw">this string</span> s) {
+    <span class="kw">if</span> (<span class="ty">string</span>.<span class="fn">IsNullOrEmpty</span>(s)) <span class="kw">return</span> s;
+    <span class="kw">return</span> <span class="ty">char</span>.<span class="fn">ToUpper</span>(s[<span class="num">0</span>]) + s[<span class="num">1</span>..].ToLower();
+  }
+  <span class="kw">public static bool</span> <span class="fn">EEmail</span>(<span class="kw">this string</span> s) =&gt;
+    s.<span class="fn">Contains</span>(<span class="str">"@"</span>) &amp;&amp; s.<span class="fn">Contains</span>(<span class="str">"."</span>);
+  <span class="kw">public static</span> <span class="ty">string</span> <span class="fn">Ripeti</span>(<span class="kw">this string</span> s, <span class="kw">int</span> n) =&gt;
+    <span class="ty">string</span>.<span class="fn">Concat</span>(Enumerable.<span class="fn">Repeat</span>(s, n));
+}
+
+<span class="cm">// Uso — come se fossero metodi nativi:</span>
+<span class="kw">string</span> nome = <span class="str">"mario"</span>;
+Console.<span class="fn">WriteLine</span>(nome.<span class="fn">Capitalizza</span>());  <span class="cm">// "Mario"</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8afeeff9fecae7ebe3e6a4e3fe">[email&#160;protected]</a>"</span>.<span class="fn">EEmail</span>()); <span class="cm">// true</span>
+Console.<span class="fn">WriteLine</span>(<span class="str">"ab"</span>.<span class="fn">Ripeti</span>(<span class="num">3</span>));          <span class="cm">// "ababab"</span>
+
+<span class="cm">// Estensione su List&lt;T&gt;:</span>
+<span class="kw">static class</span> <span class="ty">ListExtensions</span> {
+  <span class="kw">public static void</span> <span class="fn">StampaTutti</span>&lt;T&gt;(<span class="kw">this</span> <span class="ty">List</span>&lt;T&gt; lista) {
+    lista.<span class="fn">ForEach</span>(item =&gt; Console.<span class="fn">WriteLine</span>(item));
+  }
+  <span class="kw">public static</span> T <span class="fn">CasualeItem</span>&lt;T&gt;(<span class="kw">this</span> <span class="ty">List</span>&lt;T&gt; lista) =&gt;
+    lista[<span class="kw">new</span> <span class="ty">Random</span>().<span class="fn">Next</span>(lista.<span class="fn">Count</span>)];
+}
+<span class="kw">var</span> nomi = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">string</span>&gt; { <span class="str">"Marco"</span>, <span class="str">"Giulia"</span>, <span class="str">"Luca"</span> };
+nomi.<span class="fn">StampaTutti</span>();
+Console.<span class="fn">WriteLine</span>(nomi.<span class="fn">CasualeItem</span>());
+
+<span class="cm">// LINQ è interamente costruito su extension methods!</span></pre>
+    </div>
+  </div>
+
+  <!-- 4. Thread & Task -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>4. Thread, Task &amp; Parallelismo</h3><span class="topic-sub">Thread, lock, CancellationToken, Parallel, Task.Run</span></div>
+    <div class="topic-body">
+      <div class="info">Per operazioni CPU-intensive usa <code>Task.Run</code>. Per evitare race conditions su dati condivisi usa <code>lock</code>. <code>CancellationToken</code> permette di annullare operazioni in modo cooperativo.</div>
+      <pre><span class="cm">// Task.Run — esegui su thread pool:</span>
+<span class="ty">Task</span> t = <span class="ty">Task</span>.<span class="fn">Run</span>(() =&gt; Console.<span class="fn">WriteLine</span>(<span class="str">"Su altro thread!"</span>));
+t.<span class="fn">Wait</span>(); <span class="cm">// aspetta il completamento</span>
+
+<span class="kw">int</span> risultato = <span class="kw">await</span> <span class="ty">Task</span>.<span class="fn">Run</span>(() =&gt; {
+  <span class="kw">int</span> s = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">1000000</span>; i++) s += i;
+  <span class="kw">return</span> s;
+});
+
+<span class="cm">// lock — evita race conditions:</span>
+<span class="kw">private readonly object</span> _lock = <span class="kw">new</span> <span class="kw">object</span>();
+<span class="kw">private int</span> _contatore = <span class="num">0</span>;
+<span class="kw">void</span> <span class="fn">Incrementa</span>() {
+  <span class="kw">lock</span> (_lock) { _contatore++; } <span class="cm">// solo 1 thread alla volta</span>
+}
+
+<span class="cm">// CancellationToken — annullamento cooperativo:</span>
+<span class="kw">var</span> cts = <span class="kw">new</span> <span class="ty">CancellationTokenSource</span>();
+cts.<span class="fn">CancelAfter</span>(<span class="num">3000</span>); <span class="cm">// annulla dopo 3 secondi</span>
+<span class="kw">try</span> {
+  <span class="kw">await</span> <span class="ty">Task</span>.<span class="fn">Run</span>(<span class="kw">async</span> () =&gt; {
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+      cts.Token.<span class="fn">ThrowIfCancellationRequested</span>();
+      <span class="kw">await</span> <span class="ty">Task</span>.<span class="fn">Delay</span>(<span class="num">500</span>, cts.Token);
+      Console.<span class="fn">WriteLine</span>(<span class="str">"Lavoro..."</span>);
+    }
+  }, cts.Token);
+}
+<span class="kw">catch</span> (<span class="ty">OperationCanceledException</span>) { Console.<span class="fn">WriteLine</span>(<span class="str">"Annullato!"</span>); }
+
+<span class="cm">// Parallel.For — CPU-bound parallelismo:</span>
+<span class="ty">Parallel</span>.<span class="fn">For</span>(<span class="num">0</span>, <span class="num">10</span>, i =&gt; Console.<span class="fn">WriteLine</span>($<span class="str">"Item {i}"</span>));
+<span class="ty">Parallel</span>.<span class="fn">ForEach</span>(nomi, nome =&gt; Console.<span class="fn">WriteLine</span>(nome));
+
+<span class="cm">// Thread diretto (raramente necessario):</span>
+<span class="kw">var</span> thread = <span class="kw">new</span> <span class="ty">Thread</span>(() =&gt; Console.<span class="fn">WriteLine</span>(<span class="str">"Thread!"</span>));
+thread.IsBackground = <span class="kw">true</span>;
+thread.<span class="fn">Start</span>();
+thread.<span class="fn">Join</span>(); <span class="cm">// aspetta</span></pre>
+      <div class="warn">Preferisci sempre async/await e Task.Run al threading diretto. Usa lock solo quando necessario — preferisci ConcurrentDictionary e Interlocked per dati condivisi semplici.</div>
+    </div>
+  </div>
+
+  <!-- 5. Collezioni Avanzate -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>5. Collezioni Avanzate</h3><span class="topic-sub">SortedDictionary, ConcurrentDictionary, LinkedList, SortedSet</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// SortedDictionary — chiavi sempre ordinate:</span>
+<span class="kw">var</span> sd = <span class="kw">new</span> <span class="ty">SortedDictionary</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt;();
+sd[<span class="str">"banana"</span>] = <span class="num">2</span>; sd[<span class="str">"arancia"</span>] = <span class="num">5</span>; sd[<span class="str">"ciliegia"</span>] = <span class="num">1</span>;
+<span class="kw">foreach</span> (<span class="kw">var</span> kv <span class="kw">in</span> sd) Console.<span class="fn">WriteLine</span>(kv.Key); <span class="cm">// arancia, banana, ciliegia</span>
+
+<span class="cm">// SortedSet — elementi unici e ordinati:</span>
+<span class="kw">var</span> ss = <span class="kw">new</span> <span class="ty">SortedSet</span>&lt;<span class="ty">int</span>&gt; { <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span> };
+<span class="cm">// ss = { 1, 2, 3, 5 } — no duplicati, sempre ordinato</span>
+ss.<span class="fn">Min</span>; ss.<span class="fn">Max</span>; <span class="cm">// 1, 5</span>
+
+<span class="cm">// ConcurrentDictionary — thread-safe:</span>
+<span class="kw">var</span> cd = <span class="kw">new</span> <span class="ty">ConcurrentDictionary</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt;();
+cd.<span class="fn">TryAdd</span>(<span class="str">"Marco"</span>, <span class="num">25</span>);
+cd.<span class="fn">AddOrUpdate</span>(<span class="str">"Marco"</span>, <span class="num">1</span>, (key, old) =&gt; old + <span class="num">1</span>); <span class="cm">// incrementa</span>
+cd.<span class="fn">GetOrAdd</span>(<span class="str">"Giulia"</span>, <span class="num">30</span>); <span class="cm">// aggiunge solo se manca</span>
+cd.<span class="fn">TryRemove</span>(<span class="str">"Marco"</span>, <span class="kw">out int</span> val);
+
+<span class="cm">// LinkedList — inserimento O(1) ovunque:</span>
+<span class="kw">var</span> ll = <span class="kw">new</span> <span class="ty">LinkedList</span>&lt;<span class="ty">string</span>&gt;();
+ll.<span class="fn">AddLast</span>(<span class="str">"B"</span>); ll.<span class="fn">AddFirst</span>(<span class="str">"A"</span>); ll.<span class="fn">AddLast</span>(<span class="str">"C"</span>);
+<span class="ty">LinkedListNode</span>&lt;<span class="ty">string</span>&gt; nodo = ll.<span class="fn">Find</span>(<span class="str">"B"</span>);
+ll.<span class="fn">AddAfter</span>(nodo, <span class="str">"B2"</span>);
+ll.<span class="fn">Remove</span>(nodo);
+
+<span class="cm">// Interlocked — operazioni atomiche senza lock:</span>
+<span class="kw">private int</span> _count = <span class="num">0</span>;
+<span class="ty">Interlocked</span>.<span class="fn">Increment</span>(<span class="kw">ref</span> _count);  <span class="cm">// thread-safe ++</span>
+<span class="ty">Interlocked</span>.<span class="fn">Decrement</span>(<span class="kw">ref</span> _count);  <span class="cm">// thread-safe --</span>
+<span class="ty">Interlocked</span>.<span class="fn">Add</span>(<span class="kw">ref</span> _count, <span class="num">5</span>);      <span class="cm">// thread-safe += 5</span></pre>
+      <div class="table-wrap"><table><tr><th>Collezione</th><th>Ordinata</th><th>Thread-safe</th><th>Uso principale</th></tr>
+      <tr><td>Dictionary</td><td>No</td><td>No</td><td>Ricerca veloce</td></tr>
+      <tr><td>SortedDictionary</td><td>Sì (chiave)</td><td>No</td><td>Dati ordinati</td></tr>
+      <tr><td>ConcurrentDictionary</td><td>No</td><td>Sì</td><td>Multi-threading</td></tr>
+      <tr><td>LinkedList</td><td>No</td><td>No</td><td>Inserimenti frequenti</td></tr>
+      <tr><td>SortedSet</td><td>Sì</td><td>No</td><td>Elementi unici ordinati</td></tr></table></div>
+    </div>
+  </div>
+
+  <!-- 6. Interfacce Fondamentali -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>6. Interfacce Fondamentali</h3><span class="topic-sub">IComparable&lt;T&gt;, IEquatable&lt;T&gt;, IComparer&lt;T&gt;, ICloneable</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// IComparable&lt;T&gt; — permette ordinamento naturale:</span>
+<span class="kw">class</span> <span class="ty">Studente</span> : IComparable&lt;<span class="ty">Studente</span>&gt; {
+  <span class="kw">public string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public int</span> Voto { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public int</span> <span class="fn">CompareTo</span>(<span class="ty">Studente</span>? other) {
+    <span class="kw">if</span> (other == <span class="kw">null</span>) <span class="kw">return</span> <span class="num">1</span>;
+    <span class="kw">return</span> Voto.<span class="fn">CompareTo</span>(other.Voto); <span class="cm">// ordine per voto</span>
+  }
+}
+<span class="kw">var</span> studenti = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">Studente</span>&gt; { ... };
+studenti.<span class="fn">Sort</span>(); <span class="cm">// usa CompareTo automaticamente</span>
+
+<span class="cm">// IEquatable&lt;T&gt; — uguaglianza personalizzata:</span>
+<span class="kw">class</span> <span class="ty">Punto</span> : IEquatable&lt;<span class="ty">Punto</span>&gt; {
+  <span class="kw">public int</span> X, Y;
+  <span class="kw">public bool</span> <span class="fn">Equals</span>(<span class="ty">Punto</span>? other) =&gt;
+    other != <span class="kw">null</span> &amp;&amp; X == other.X &amp;&amp; Y == other.Y;
+  <span class="kw">public override bool</span> <span class="fn">Equals</span>(<span class="kw">object</span>? obj) =&gt;
+    obj <span class="kw">is</span> <span class="ty">Punto</span> p &amp;&amp; <span class="fn">Equals</span>(p);
+  <span class="kw">public override int</span> <span class="fn">GetHashCode</span>() =&gt; HashCode.<span class="fn">Combine</span>(X, Y);
+}
+<span class="kw">var</span> p1 = <span class="kw">new</span> <span class="ty">Punto</span> { X=<span class="num">1</span>, Y=<span class="num">2</span> };
+<span class="kw">var</span> p2 = <span class="kw">new</span> <span class="ty">Punto</span> { X=<span class="num">1</span>, Y=<span class="num">2</span> };
+Console.<span class="fn">WriteLine</span>(p1.<span class="fn">Equals</span>(p2)); <span class="cm">// true!</span>
+
+<span class="cm">// IComparer&lt;T&gt; — ordinamento alternativo:</span>
+<span class="kw">class</span> <span class="ty">OrdinaNome</span> : IComparer&lt;<span class="ty">Studente</span>&gt; {
+  <span class="kw">public int</span> <span class="fn">Compare</span>(<span class="ty">Studente</span>? a, <span class="ty">Studente</span>? b) =&gt;
+    <span class="ty">string</span>.<span class="fn">Compare</span>(a?.Nome, b?.Nome, <span class="ty">StringComparison</span>.OrdinalIgnoreCase);
+}
+studenti.<span class="fn">Sort</span>(<span class="kw">new</span> <span class="ty">OrdinaNome</span>()); <span class="cm">// ordina per nome</span>
+
+<span class="cm">// Confronto con lambda (più pratico):</span>
+studenti.<span class="fn">Sort</span>((a, b) =&gt; a.Nome.<span class="fn">CompareTo</span>(b.Nome));
+<span class="kw">var</span> ordinati = studenti.<span class="fn">OrderBy</span>(s =&gt; s.Voto).<span class="fn">ThenBy</span>(s =&gt; s.Nome);</pre>
+    </div>
+  </div>
+
+  <!-- 7. Operator Overloading -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>7. Operator Overloading</h3><span class="topic-sub">Sovraccaricare +, -, ==, !=, >, &lt;, conversioni implicite/esplicite</span></div>
+    <div class="topic-body">
+      <div class="info">In C# puoi ridefinire il comportamento degli operatori per le tue classi/struct. Gli operatori di uguaglianza (==, !=) vanno sempre in coppia, così come (&lt;, &gt;) e (&lt;=, &gt;=).</div>
+      <pre><span class="kw">struct</span> <span class="ty">Vettore2D</span> {
+  <span class="kw">public double</span> X, Y;
+  <span class="kw">public</span> <span class="ty">Vettore2D</span>(<span class="kw">double</span> x, <span class="kw">double</span> y) { X = x; Y = y; }
+
+  <span class="cm">// Operatori aritmetici:</span>
+  <span class="kw">public static</span> <span class="ty">Vettore2D</span> <span class="kw">operator</span> +(<span class="ty">Vettore2D</span> a, <span class="ty">Vettore2D</span> b) =&gt;
+    <span class="kw">new</span>(a.X + b.X, a.Y + b.Y);
+  <span class="kw">public static</span> <span class="ty">Vettore2D</span> <span class="kw">operator</span> -(<span class="ty">Vettore2D</span> a, <span class="ty">Vettore2D</span> b) =&gt;
+    <span class="kw">new</span>(a.X - b.X, a.Y - b.Y);
+  <span class="kw">public static</span> <span class="ty">Vettore2D</span> <span class="kw">operator</span> *(<span class="ty">Vettore2D</span> v, <span class="kw">double</span> s) =&gt;
+    <span class="kw">new</span>(v.X * s, v.Y * s);
+
+  <span class="cm">// Uguaglianza (sempre in coppia!):</span>
+  <span class="kw">public static bool</span> <span class="kw">operator</span> ==(<span class="ty">Vettore2D</span> a, <span class="ty">Vettore2D</span> b) =&gt;
+    a.X == b.X &amp;&amp; a.Y == b.Y;
+  <span class="kw">public static bool</span> <span class="kw">operator</span> !=(<span class="ty">Vettore2D</span> a, <span class="ty">Vettore2D</span> b) =&gt; !(a == b);
+
+  <span class="cm">// Confronto (sempre in coppia!):</span>
+  <span class="kw">public static bool</span> <span class="kw">operator</span> &gt;(<span class="ty">Vettore2D</span> a, <span class="ty">Vettore2D</span> b) =&gt;
+    a.<span class="fn">Lunghezza</span>() &gt; b.<span class="fn">Lunghezza</span>();
+  <span class="kw">public static bool</span> <span class="kw">operator</span> &lt;(<span class="ty">Vettore2D</span> a, <span class="ty">Vettore2D</span> b) =&gt; b &gt; a;
+
+  <span class="kw">public double</span> <span class="fn">Lunghezza</span>() =&gt; Math.<span class="fn">Sqrt</span>(X*X + Y*Y);
+  <span class="kw">public override string</span> <span class="fn">ToString</span>() =&gt; $<span class="str">"({X}, {Y})"</span>;
+
+  <span class="cm">// Conversioni implicite/esplicite:</span>
+  <span class="kw">public static implicit operator</span> <span class="ty">Vettore2D</span>((<span class="kw">double</span>,<span class="kw">double</span>) t) =&gt;
+    <span class="kw">new</span>(t.Item1, t.Item2);
+  <span class="kw">public static explicit operator</span> <span class="ty">string</span>(<span class="ty">Vettore2D</span> v) =&gt; v.<span class="fn">ToString</span>();
+}
+
+<span class="ty">Vettore2D</span> v1 = <span class="kw">new</span>(<span class="num">3</span>, <span class="num">4</span>);
+<span class="ty">Vettore2D</span> v2 = <span class="kw">new</span>(<span class="num">1</span>, <span class="num">2</span>);
+<span class="ty">Vettore2D</span> v3 = v1 + v2;          <span class="cm">// (4, 6)</span>
+<span class="kw">bool</span> uguale = v1 == v2;           <span class="cm">// false</span>
+<span class="ty">Vettore2D</span> v4 = (<span class="num">5.0</span>, <span class="num">6.0</span>);      <span class="cm">// conversione implicita da tuple</span>
+Console.<span class="fn">WriteLine</span>(v3);            <span class="cm">// (4, 6)</span></pre>
+    </div>
+  </div>
+
+  <!-- 8. Indexers & Advanced Properties -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>8. Indexers &amp; Proprietà Avanzate</h3><span class="topic-sub">Indicizzatori, init-only, required, computed, backing field</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Indexer — accesso con [] sulla tua classe:</span>
+<span class="kw">class</span> <span class="ty">Rubrica</span> {
+  <span class="kw">private</span> <span class="ty">Dictionary</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt; _dati = <span class="kw">new</span>();
+
+  <span class="cm">// Indexer con chiave string:</span>
+  <span class="kw">public string this</span>[<span class="ty">string</span> nome] {
+    <span class="kw">get</span> =&gt; _dati.<span class="fn">GetValueOrDefault</span>(nome, <span class="str">"N/A"</span>);
+    <span class="kw">set</span> =&gt; _dati[nome] = value;
+  }
+  <span class="cm">// Indexer con indice int:</span>
+  <span class="kw">public string this</span>[<span class="kw">int</span> i] =&gt; _dati.<span class="fn">ElementAt</span>(i).Value;
+}
+<span class="ty">Rubrica</span> r = <span class="kw">new</span>();
+r[<span class="str">"Marco"</span>] = <span class="str">"123-456"</span>; <span class="cm">// set</span>
+Console.<span class="fn">WriteLine</span>(r[<span class="str">"Marco"</span>]); <span class="cm">// get → "123-456"</span>
+
+<span class="cm">// init-only property (C# 9+) — si imposta solo in inizializzazione:</span>
+<span class="kw">class</span> <span class="ty">Persona</span> {
+  <span class="kw">public string</span> Nome { <span class="kw">get</span>; <span class="kw">init</span>; } <span class="cm">// solo con new + {}</span>
+  <span class="kw">public int</span> Eta { <span class="kw">get</span>; <span class="kw">init</span>; }
+}
+<span class="ty">Persona</span> p = <span class="kw">new</span>() { Nome = <span class="str">"Marco"</span>, Eta = <span class="num">25</span> };
+<span class="cm">// p.Nome = "Giulia"; // ERRORE — non modificabile dopo init</span>
+
+<span class="cm">// required property (C# 11+) — obbligatoria in inizializzazione:</span>
+<span class="kw">class</span> <span class="ty">Prodotto</span> {
+  <span class="kw">public required string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public required double</span> Prezzo { <span class="kw">get</span>; <span class="kw">set</span>; }
+}
+<span class="cm">// new Prodotto() — ERRORE: Nome e Prezzo sono required</span>
+<span class="ty">Prodotto</span> prod = <span class="kw">new</span>() { Nome = <span class="str">"Pizza"</span>, Prezzo = <span class="num">8.50</span> }; <span class="cm">// OK</span>
+
+<span class="cm">// Proprietà calcolate e backing field avanzate:</span>
+<span class="kw">class</span> <span class="ty">Cerchio</span> {
+  <span class="kw">private double</span> _raggio;
+  <span class="kw">public double</span> Raggio {
+    <span class="kw">get</span> =&gt; _raggio;
+    <span class="kw">set</span> =&gt; _raggio = value &lt; <span class="num">0</span> ? <span class="kw">throw new</span> <span class="ty">ArgumentException</span>(<span class="str">"Negativo!"</span>) : value;
+  }
+  <span class="kw">public double</span> Area =&gt; Math.PI * _raggio * _raggio;           <span class="cm">// calcolata</span>
+  <span class="kw">public double</span> Circonferenza =&gt; <span class="num">2</span> * Math.PI * _raggio;       <span class="cm">// calcolata</span>
+  <span class="kw">public double</span> Diametro { <span class="kw">get</span> =&gt; _raggio * <span class="num">2</span>; <span class="kw">set</span> =&gt; _raggio = value / <span class="num">2</span>; }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 9. Namespaces -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><h3>9. Namespaces &amp; using Direttive</h3><span class="topic-sub">namespace, using, global using, alias, namespace file-scoped</span></div>
+    <div class="topic-body">
+      <pre><span class="cm">// Definire un namespace:</span>
+<span class="kw">namespace</span> MiaApp.Modelli {
+  <span class="kw">class</span> <span class="ty">Utente</span> { <span class="kw">public string</span> Nome { <span class="kw">get</span>; <span class="kw">set</span>; } }
+}
+<span class="kw">namespace</span> MiaApp.Servizi {
+  <span class="kw">class</span> <span class="ty">UtenteService</span> {
+    <span class="cm">// Accesso con nome completo:</span>
+    MiaApp.Modelli.<span class="ty">Utente</span> u = <span class="kw">new</span>();
+  }
+}
+
+<span class="cm">// using — importa namespace:</span>
+<span class="kw">using</span> System.Collections.Generic;
+<span class="kw">using</span> System.Linq;
+<span class="kw">using</span> MiaApp.Modelli;
+
+<span class="cm">// Alias — rinomina per conflitti:</span>
+<span class="kw">using</span> Win = System.Windows;
+<span class="kw">using</span> Web = System.Web;
+Win.<span class="ty">Point</span> p1 = <span class="kw">new</span>();
+Web.<span class="ty">HttpContext</span> ctx = ...;
+
+<span class="cm">// using static — importa membri statici direttamente:</span>
+<span class="kw">using static</span> System.Math;
+<span class="kw">using static</span> System.Console;
+<span class="fn">WriteLine</span>(<span class="fn">Sqrt</span>(<span class="num">16</span>)); <span class="cm">// senza Math. e Console.</span>
+
+<span class="cm">// global using (C# 10+) — vale per tutto il progetto:</span>
+<span class="cm">// In GlobalUsings.cs:</span>
+<span class="kw">global using</span> System;
+<span class="kw">global using</span> System.Collections.Generic;
+<span class="kw">global using</span> System.Linq;
+<span class="cm">// Ora disponibili in tutti i file senza dichiarare!</span>
+
+<span class="cm">// File-scoped namespace (C# 10+) — meno indentazione:</span>
+<span class="kw">namespace</span> MiaApp.Modelli; <span class="cm">// nessuna { }</span>
+<span class="kw">class</span> <span class="ty">Prodotto</span> { } <span class="cm">// automaticamente in MiaApp.Modelli</span>
+<span class="kw">class</span> <span class="ty">Ordine</span> { }   <span class="cm">// stesso namespace</span>
+
+<span class="cm">// namespace annidati — equivalenti:</span>
+<span class="kw">namespace</span> A { <span class="kw">namespace</span> B { <span class="kw">class</span> <span class="ty">C</span> {} } }
+<span class="kw">namespace</span> A.B { <span class="kw">class</span> <span class="ty">C</span> {} } <span class="cm">// identico</span></pre>
+      <div class="warn">Best practice: usa file-scoped namespace (C# 10+) e global using per ridurre il boilerplate. Ogni file dovrebbe avere un solo namespace e una sola classe principale.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+  </main>
+
+</div>
+
+<script>
+const MODS = ['mod1','mod2','mod3','mod4','mod5','mod6'];
+
+// ── Active tracking ──
+let currentMod = 'mod1';
+let currentCard = -1;
+
+// ── Show module ──
+function showMod(modId, btn) {
+  currentMod = modId;
+  // sections
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + modId).classList.add('active');
+  // nav buttons
+  if (btn) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  // expand that tree group, collapse others
+  document.querySelectorAll('.tree-mod').forEach(m => {
+    if (m.dataset.mod === modId) {
+      m.classList.add('open');
+    } else {
+      m.classList.remove('open');
+    }
+  });
+  // reset card highlight
+  markTreeItem(-1);
+}
+
+// ── Show specific topic ──
+function showTopic(modId, idx) {
+  // Switch module if needed
+  if (modId !== currentMod) {
+    const btn = document.querySelector('.nav-btn[data-mod="' + modId + '"]');
+    showMod(modId, btn);
+  }
+  currentCard = idx;
+  // Open that card, close others
+  const cards = document.querySelectorAll('#section-' + modId + ' .topic-card');
+  cards.forEach((c, i) => {
+    if (i === idx) c.classList.add('open');
+    else c.classList.remove('open');
+  });
+  // Scroll card into view
+  if (cards[idx]) {
+    setTimeout(() => cards[idx].scrollIntoView({behavior:'smooth', block:'start'}), 60);
+  }
+  markTreeItem(idx);
+  closeResults();
+}
+
+// ── Highlight tree item ──
+function markTreeItem(idx) {
+  document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+  if (idx < 0) return;
+  const items = document.querySelectorAll('#section-' + currentMod + ' ~ * .tree-item, .tree-children .tree-item');
+  // simpler: find by mod group
+  const grp = document.querySelector('.tree-mod[data-mod="' + currentMod + '"]');
+  if (grp) {
+    const children = grp.nextElementSibling?.querySelectorAll('.tree-item');
+    if (children && children[idx]) children[idx].classList.add('active');
+  }
+}
+
+// ── Tree toggle ──
+function treeToggle(el) {
+  const modId = el.dataset.mod;
+  const isOpen = el.classList.contains('open');
+  if (!isOpen) {
+    // switch to this module too
+    const btn = document.querySelector('.nav-btn[data-mod="' + modId + '"]');
+    showMod(modId, btn);
+  } else {
+    el.classList.remove('open');
+  }
+}
+
+function toggle(card) { card.classList.toggle('open'); }
+
+// ── Init: open first module tree group ──
+(function() {
+  const firstMod = document.querySelector('.tree-mod[data-mod="mod1"]');
+  if (firstMod) firstMod.classList.add('open');
+  document.getElementById('section-mod1').classList.add('active');
+})();
+
+// ── Search ──
+const MODULE_LABELS = {
+  mod1:'I — Basi', mod2:'II — OOP', mod3:'III — File',
+  mod4:'IV — Avanzato', mod5:'V — Extra', mod6:'VI — Pro'
+};
+let _index = null;
+function getIndex() {
+  if (_index) return _index;
+  _index = [];
+  MODS.forEach(modId => {
+    document.querySelectorAll('#section-' + modId + ' .topic-card').forEach((card, idx) => {
+      const title = card.querySelector('h3')?.textContent || '';
+      const sub   = card.querySelector('.topic-sub')?.textContent || '';
+      const body  = card.querySelector('.topic-body')?.textContent || '';
+      _index.push({ modId, idx, title, sub,
+        text: (title+' '+sub+' '+body).toLowerCase(),
+        bodySnippet: body.trim().slice(0,200) });
+    });
+  });
+  return _index;
+}
+function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function highlight(s, q) {
+  return s.replace(new RegExp('('+esc(q)+')','gi'),'<span class="sr-highlight">$1</span>');
+}
+function onSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  const clearBtn = document.getElementById('searchClear');
+  const hint = document.getElementById('searchHint');
+  clearBtn.style.display = q ? 'block' : 'none';
+  if (hint) hint.style.display = q ? 'none' : '';
+  if (!q) { closeResults(); return; }
+  openResults();
+  const results = getIndex().filter(r => r.text.includes(q.toLowerCase())).slice(0,18);
+  const box = document.getElementById('searchResults');
+  if (!results.length) {
+    box.innerHTML = '<div class="sr-empty">Nessun risultato per "<b>'+q+'</b>"</div>';
+    return;
+  }
+  box.innerHTML = results.map(r => {
+    const bl = r.bodySnippet.toLowerCase();
+    const pos = bl.indexOf(q.toLowerCase());
+    let snippet = pos !== -1
+      ? (pos>20?'\u2026':'')+r.bodySnippet.slice(Math.max(0,pos-20), Math.min(r.bodySnippet.length,pos+q.length+50))+'\u2026'
+      : r.bodySnippet.slice(0,80)+'\u2026';
+    return '<div class="sr-item" onclick="showTopic(\'' + r.modId + '\',' + r.idx + ')">'
+      + '<div class="sr-mod">' + MODULE_LABELS[r.modId] + '</div>'
+      + '<div class="sr-title">' + highlight(r.title, q) + '</div>'
+      + '<div class="sr-sub">' + highlight(snippet, q) + '</div>'
+      + '</div>';
+  }).join('');
+}
+function openResults() { if (document.getElementById('searchInput').value.trim()) document.getElementById('searchResults').classList.add('open'); }
+function closeResults() { document.getElementById('searchResults').classList.remove('open'); }
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  const hint = document.getElementById('searchHint');
+  if (hint) hint.style.display = '';
+  closeResults();
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('searchWrap').contains(e.target)) closeResults();
+});
+document.addEventListener('keydown', e => {
+  const inp = document.getElementById('searchInput');
+  if (e.key === '/' && document.activeElement !== inp) {
+    e.preventDefault(); inp.focus();
+  }
+  if (e.key === 'Escape') { clearSearch(); inp.blur(); }
+});
+</script>
+</body>
+</html>
