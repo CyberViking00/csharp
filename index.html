@@ -3554,26 +3554,233 @@ Console.<span class="fn">WriteLine</span>(connStr);
   </div>
 </div>
       <!-- 15. Scope & Visibilità -->
-      <div class="topic-card">
-        <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>15. Scope &amp; Visibilità delle Variabili</h3><div class="topic-sub">Scope locale, blocco, classe, shadowing</div></div><span class="arrow">▼</span></div>
-        <div class="topic-body">
-          <pre><span class="ty">int</span> x = <span class="num">10</span>;  <span class="cm">// variabile del metodo</span>
+<div class="topic-card">
+  <div class="topic-header" onclick="toggle(this.closest('.topic-card'))"><div><h3>15. Scope &amp; Visibilità delle Variabili</h3><div class="topic-sub">Scope locale, blocco, metodo, classe, shadowing, buone pratiche</div></div><span class="arrow">▼</span></div>
+  <div class="topic-body">
+
+    <h4>Cos'è lo scope?</h4>
+    <pre><span class="cm">// Lo scope (ambito) definisce DOVE una variabile esiste ed è utilizzabile.</span>
+<span class="cm">// Una variabile esiste solo nel blocco {} in cui è dichiarata.</span>
+
+<span class="ty">int</span> x = <span class="num">10</span>;  <span class="cm">// scope: tutto il metodo</span>
 
 <span class="kw">if</span> (<span class="kw">true</span>) {
-    <span class="ty">int</span> y = <span class="num">5</span>;  <span class="cm">// esiste solo dentro questo blocco</span>
-    Console.<span class="fn">WriteLine</span>(x);  <span class="cm">// OK — x è visibile</span>
-    Console.<span class="fn">WriteLine</span>(y);  <span class="cm">// OK</span>
+    <span class="ty">int</span> y = <span class="num">5</span>;       <span class="cm">// scope: solo questo blocco if</span>
+    Console.<span class="fn">WriteLine</span>(x);  <span class="cm">// OK — x è visibile (blocco esterno)</span>
+    Console.<span class="fn">WriteLine</span>(y);  <span class="cm">// OK — y è visibile (stesso blocco)</span>
 }
 <span class="cm">// Console.WriteLine(y);  ← ERRORE! y non esiste più</span>
+Console.<span class="fn">WriteLine</span>(x);      <span class="cm">// OK — x esiste ancora</span></pre>
 
-<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i < <span class="num">5</span>; i++) {
-    <span class="cm">// i esiste solo dentro il for</span>
+    <h4>Scope nei cicli</h4>
+    <pre><span class="cm">// La variabile del for esiste solo dentro il for:</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
+    <span class="ty">int</span> doppio = i * <span class="num">2</span>;  <span class="cm">// esiste solo in questa iterazione</span>
+    Console.<span class="fn">WriteLine</span>(doppio);
 }
-<span class="cm">// Console.WriteLine(i);  ← ERRORE!</span></pre>
-          <div class="note">Una variabile esiste solo nel blocco {} in cui è dichiarata. I blocchi interni possono vedere le variabili dei blocchi esterni, ma non viceversa.</div>
-        </div>
-      </div>
-    </div>
+<span class="cm">// Console.WriteLine(i);      ← ERRORE! i non esiste fuori dal for</span>
+<span class="cm">// Console.WriteLine(doppio); ← ERRORE! doppio non esiste fuori dal for</span>
+
+<span class="cm">// Se hai bisogno di i dopo il ciclo, dichiarala fuori:</span>
+<span class="ty">int</span> contatore = <span class="num">0</span>;
+<span class="kw">for</span> (contatore = <span class="num">0</span>; contatore &lt; <span class="num">10</span>; contatore++) {
+    <span class="cm">// ...</span>
+}
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Finito a: {contatore}"</span>);  <span class="cm">// OK — dichiarata fuori</span>
+
+<span class="cm">// Stesso per while e foreach:</span>
+<span class="kw">foreach</span> (<span class="ty">string</span> nome <span class="kw">in</span> <span class="kw">new</span>[] { <span class="str">"A"</span>, <span class="str">"B"</span> }) {
+    Console.<span class="fn">WriteLine</span>(nome);
+}
+<span class="cm">// Console.WriteLine(nome);  ← ERRORE!</span></pre>
+
+    <h4>Scope annidati — i blocchi interni vedono quelli esterni</h4>
+    <pre><span class="ty">int</span> a = <span class="num">1</span>;           <span class="cm">// livello 0</span>
+
+<span class="kw">if</span> (<span class="kw">true</span>) {
+    <span class="ty">int</span> b = <span class="num">2</span>;         <span class="cm">// livello 1</span>
+    Console.<span class="fn">WriteLine</span>(a);  <span class="cm">// OK — vede livello 0</span>
+
+    <span class="kw">if</span> (<span class="kw">true</span>) {
+        <span class="ty">int</span> c = <span class="num">3</span>;       <span class="cm">// livello 2</span>
+        Console.<span class="fn">WriteLine</span>(a);  <span class="cm">// OK — vede livello 0</span>
+        Console.<span class="fn">WriteLine</span>(b);  <span class="cm">// OK — vede livello 1</span>
+        Console.<span class="fn">WriteLine</span>(c);  <span class="cm">// OK — vede livello 2</span>
+    }
+    <span class="cm">// Console.WriteLine(c);  ← ERRORE! c esiste solo dentro il secondo if</span>
+}
+<span class="cm">// Console.WriteLine(b);  ← ERRORE!</span>
+<span class="cm">// Console.WriteLine(c);  ← ERRORE!</span></pre>
+
+    <h4>Scope dei metodi</h4>
+    <pre><span class="cm">// Le variabili di un metodo non sono visibili in altri metodi!</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MetodoA</span>() {
+    <span class="ty">int</span> x = <span class="num">100</span>;
+    Console.<span class="fn">WriteLine</span>(x);  <span class="cm">// OK</span>
+}
+
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MetodoB</span>() {
+    <span class="cm">// Console.WriteLine(x);  ← ERRORE! x di MetodoA non è visibile qui</span>
+    <span class="ty">int</span> x = <span class="num">200</span>;  <span class="cm">// questa è una x diversa, locale a MetodoB</span>
+    Console.<span class="fn">WriteLine</span>(x);  <span class="cm">// 200</span>
+}
+
+<span class="cm">// Per condividere dati tra metodi: usa parametri e return!</span>
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">CalcolaValore</span>() => <span class="num">42</span>;
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">UsaValore</span>(<span class="ty">int</span> valore) => Console.<span class="fn">WriteLine</span>(valore);
+<span class="fn">UsaValore</span>(<span class="fn">CalcolaValore</span>());  <span class="cm">// passa il valore esplicitamente</span></pre>
+
+    <h4>Variabili di classe (campi statici)</h4>
+    <pre><span class="kw">class</span> <span class="ty">Esempio</span> {
+    <span class="cm">// Campo statico — visibile in tutti i metodi della classe:</span>
+    <span class="kw">static</span> <span class="ty">int</span> contatore = <span class="num">0</span>;
+    <span class="kw">static</span> <span class="ty">string</span> messaggio = <span class="str">"Ciao"</span>;
+
+    <span class="kw">static</span> <span class="ty">void</span> <span class="fn">Incrementa</span>() {
+        contatore++;  <span class="cm">// accede al campo della classe</span>
+    }
+
+    <span class="kw">static</span> <span class="ty">void</span> <span class="fn">Stampa</span>() {
+        Console.<span class="fn">WriteLine</span>(<span class="str">$"{messaggio}: {contatore}"</span>);  <span class="cm">// visibile!</span>
+    }
+}
+<span class="cm">// Usalo con moderazione — rende il codice più difficile da seguire</span></pre>
+
+    <h4>Shadowing — variabile locale nasconde quella esterna</h4>
+    <pre><span class="cm">// In C# NON puoi ridichiarare una variabile dello scope esterno nello scope interno:</span>
+<span class="ty">int</span> x2 = <span class="num">10</span>;
+<span class="kw">if</span> (<span class="kw">true</span>) {
+    <span class="cm">// int x2 = 20;  ← ERRORE DI COMPILAZIONE in C#!</span>
+    <span class="cm">// (In altri linguaggi come Java/JavaScript è permesso — attento!)</span>
+    x2 = <span class="num">20</span>;  <span class="cm">// puoi modificare quella esterna</    }
+Console.<span class="fn">WriteLine</span>(x2);  <span class="cm">// 20</span>
+
+<span class="cm">// MA in metodi diversi puoi avere lo stesso nome:</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Test1</span>() { <span class="ty">int</span> n = <span class="num">1</span>; Console.<span class="fn">WriteLine</span>(n); }
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">Test2</span>() { <span class="ty">int</span> n = <span class="num">2</span>; Console.<span class="fn">WriteLine</span>(n); }  <span class="cm">// n diversa!</span></pre>
+    <div class="note">Una variabile esiste solo nel blocco {} in cui è dichiarata. I blocchi interni possono vedere le variabili dei blocchi esterni, ma non viceversa.</div>
+
+    <h4>Buone pratiche sullo scope</h4>
+    <pre><span class="cm">// 1. Dichiara le variabili il più vicino possibile al loro uso:</span>
+<span class="cm">//Male — dichiarata troppo presto:</span>
+<span class="ty">string</span> risultato = <span class="str">""</span>;  <span class="cm">// dichiarata qui...</span>
+<span class="ty">int</span> a2 = <span class="num">5</span>, b2 = <span class="num">3</span>;
+<span class="ty">int</span> somma2 = a2 + b2;
+risultato = <span class="str">$"Somma: {somma2}"</span>;  <span class="cm">// ...usata solo qui</span>
+
+<span class="cm">//Bene — dichiarata dove serve:</span>
+<span class="ty">int</span> a3 = <span class="num">5</span>, b3 = <span class="num">3</span>;
+<span class="ty">int</span> somma3 = a3 + b3;
+<span class="ty">string</span> risultato2 = <span class="str">$"Somma: {somma3}"</span>;
+
+<span class="cm">// 2. Evita variabili con scope troppo ampio:</span>
+<span class="cm">//Male — i usata come variabile generica ovunque:</span>
+<span class="ty">int</span> i = <span class="num">0</span>;
+<span class="cm">// ... 50 righe di codice ...</span>
+<span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) { }  <span class="cm">// riusa i — confuso!</span>
+
+<span class="cm">//Bene — ogni ciclo ha la sua variabile:</span>
+<span class="kw">for</span> (<span class="ty">int</span> j = <span class="num">0</span>; j &lt; <span class="num">10</span>; j++) { }  <span class="cm">// j locale al for</span>
+
+<span class="cm">// 3. Usa nomi descrittivi per evitare confusione:</span>
+<span class="cm">//Male:</span>
+<span class="ty">int</span> x3 = <span class="num">0</span>, y3 = <span class="num">0</span>, z3 = <span class="num">0</span>;
+<span class="cm">//Bene:</span>
+<span class="ty">int</span> totaleVendite = <span class="num">0</span>, mediaVoti = <span class="num">0</span>, maxPunteggio = <span class="num">0</span>;</pre>
+
+    <h4>Errori comuni</h4>
+    <pre><span class="cm">// 1. Usare variabile fuori dal suo scope:</span>
+<span class="kw">for</span> (<span class="ty">int</span> k = <span class="num">0</span>; k &lt; <span class="num">5</span>; k++) { }
+<span class="cm">// Console.WriteLine(k);  ← ERRORE! k non esiste</span>
+
+<span class="cm">// 2. Dimenticare che ogni iterazione ha la sua copia:</span>
+<span class="kw">for</span> (<span class="ty">int</span> m = <span class="num">0</span>; m &lt; <span class="num">3</span>; m++) {
+    <span class="ty">int</span> tmp = m * <span class="num">10</span>;  <span class="cm">// nuova variabile ad ogni iterazione</span>
+    Console.<span class="fn">WriteLine</span>(tmp);
+}
+
+<span class="cm">// 3. Variabili non inizializzate:</span>
+<span class="ty">int</span> risultato3;
+<span class="cm">// Console.WriteLine(risultato3);  ← ERRORE! Non inizializzata</span>
+<span class="ty">int</span> risultato4 = <span class="num">0</span>;  <span class="cm">// sempre inizializza!</span>
+
+<span class="cm">// 4. Scope nei blocchi try/catch:</span>
+<span class="kw">try</span> {
+    <span class="ty">int</span> num = <span class="ty">int</span>.<span class="fn">Parse</span>(<span class="str">"abc"</span>);
+} <span class="kw">catch</span> (Exception ex) {
+    <span class="cm">// Console.WriteLine(num);  ← ERRORE! num non visibile nel catch</span>
+    Console.<span class="fn">WriteLine</span>(ex.Message);
+}</pre>
+
+    <h4>Esercizi</h4>
+    <pre><span class="cm">// FACILE:</span>
+<span class="cm">// 1. Scrivi codice che usa una variabile dentro e fuori un if — osserva gli errori</span>
+<span class="cm">// 2. Dichiara variabile dentro un for e prova ad usarla fuori</span>
+<span class="cm">// 3. Crea due metodi con variabili dallo stesso nome — funzionano indipendentemente?</span>
+<span class="cm">// MEDIO:</span>
+<span class="cm">// 4. Scrivi un metodo che conta quante volte appare una lettera, senza variabili globali</span>
+<span class="cm">// 5. Riscrivi codice con scope troppo ampio usando scope minimale</span>
+<span class="cm">// 6. Dimostra la differenza tra modificare una variabile di classe vs locale</span>
+<span class="cm">// DIFFICILE:</span>
+<span class="cm">// 7. Scrivi un sistema di log dove ogni metodo usa solo variabili locali</span>
+<span class="cm">// 8. Implementa un contatore usando campo statico — spiega i rischi</span>
+<span class="cm">// 9. Identifica e correggi tutti i problemi di scope in un codice dato</span></pre>
+
+    <h4>Soluzioni</h4>
+    <pre><span class="cm">// --- 1. if scope ---</span>
+<span class="ty">int</span> fuori = <span class="num">10</span>;
+<span class="kw">if</span> (fuori &gt; <span class="num">5</span>) {
+    <span class="ty">int</span> dentro = <span class="num">20</span>;
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"fuori={fuori} dentro={dentro}"</span>);
+}
+Console.<span class="fn">WriteLine</span>(<span class="str">$"fuori={fuori}"</span>); <span class="cm">// OK</span>
+<span class="cm">// Console.WriteLine(dentro);  ← ERRORE</span>
+
+<span class="cm">// --- 2. for scope ---</span>
+<span class="kw">for</span> (<span class="ty">int</span> idx = <span class="num">0</span>; idx &lt; <span class="num">3</span>; idx++) {
+    <span class="ty">int</span> quadrato = idx * idx;
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{idx}^2 = {quadrato}"</span>);
+}
+<span class="cm">// Console.WriteLine(idx);     ← ERRORE</span>
+<span class="cm">// Console.WriteLine(quadrato); ← ERRORE</span>
+
+<span class="cm">// --- 3. Stessi nomi in metodi diversi ---</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MetodoX</span>() { <span class="ty">int</span> n3 = <span class="num">100</span>; Console.<span class="fn">WriteLine</span>(<span class="str">$"X: {n3}"</span>); }
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">MetodoY</span>() { <span class="ty">int</span> n3 = <span class="num">200</span>; Console.<span class="fn">WriteLine</span>(<span class="str">$"Y: {n3}"</span>); }
+<span class="fn">MetodoX</span>(); <span class="cm">// X: 100</span>
+<span class="fn">MetodoY</span>(); <span class="cm">// Y: 200 — variabili completamente indipendenti</span>
+
+<span class="cm">// --- 4. Conta lettere ---</span>
+<span class="kw">static</span> <span class="ty">int</span> <span class="fn">ContaLettera</span>(<span class="ty">string</span> testo, <span class="ty">char</span> lettera) {
+    <span class="ty">int</span> cnt4 = <span class="num">0</span>;
+    <span class="kw">foreach</span> (<span class="ty">char</span> c <span class="kw">in</span> testo.<span class="fn">ToLower</span>())
+        <span class="kw">if</span> (c == <span class="ty">char</span>.<span class="fn">ToLower</span>(lettera)) cnt4++;
+    <span class="kw">return</span> cnt4;
+}
+Console.<span class="fn">WriteLine</span>(<span class="fn">ContaLettera</span>(<span class="str">"Programmazione"</span>, <span class="str">'a'</span>)); <span class="cm">// 2</span>
+
+<span class="cm">// --- 5. Scope minimale ---</span>
+<span class="cm">//scope troppo ampio:</span>
+<span class="ty">string</span> msg5 = <span class="str">""</span>; <span class="ty">int</span> tot5 = <span class="num">0</span>;
+<span class="ty">int</span>[] vals = {<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>};
+<span class="kw">foreach</span>(<span class="ty">int</span> v <span class="kw">in</span> vals) tot5 += v;
+msg5 = <span class="str">$"Tot: {tot5}"</span>; Console.<span class="fn">WriteLine</span>(msg5);
+<span class="cm">//scope minimale:</span>
+<span class="ty">int</span> tot5b = <span class="num">0</span>;
+<span class="kw">foreach</span>(<span class="ty">int</span> v <span class="kw">in</span> <span class="kw">new</span>[]{<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>}) tot5b += v;
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Tot: {tot5b}"</span>);
+
+<span class="cm">// --- 8. Contatore statico ---</span>
+<span class="kw">class</span> <span class="ty">ContaOggetti</span> {
+    <span class="kw">public</span> <span class="kw">static</span> <span class="ty">int</span> Totale = <span class="num">0</span>;
+    <span class="kw">public</span> <span class="fn">ContaOggetti</span>() { Totale++; }
+}
+<span class="kw">new</span> ContaOggetti(); <span class="kw">new</span> ContaOggetti(); <span class="kw">new</span> ContaOggetti();
+Console.<span class="fn">WriteLine</span>(<span class="str">$"Creati: {ContaOggetti.Totale}"</span>); <span class="cm">// 3</span>
+<span class="cm">// Rischio: Totale è condiviso — in multi-threading può causare problemi</span></pre>
+
+  </div>
+</div>
 
     <!-- SECTION INTERMEDIO (17) -->
     <div class="section" id="section-intermediate">
