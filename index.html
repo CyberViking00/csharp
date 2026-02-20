@@ -373,7 +373,7 @@ h4 { color:var(--muted); font-size:.7rem; margin:.85rem 0 .25rem; text-transform
 
           <h4>Testo — string e char</h4>
           <pre><span class="ty">string</span> nome    = <span class="str">"Marco"</span>;      <span class="cm">// testo — doppi apici</span>
-<span class="ty">string</span> email   = <span class="str">"m@email.com"</span>;
+<span class="ty">string</span> email   = <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7e133e1b131f1712501d1113">[email&#160;protected]</a>"</span>;
 <span class="ty">string</span> vuoto   = <span class="str">""</span>;           <span class="cm">// stringa vuota — valido!</span>
 <span class="ty">char</span>   iniziale = <span class="str">'M'</span>;         <span class="cm">// UN solo carattere — singoli apici</span>
 <span class="ty">char</span>   simbolo  = <span class="str">'@'</span>;
@@ -3461,8 +3461,8 @@ p.Eta = <span class="num">25</span>;
 p.<span class="fn">Stampa</span>();
 
 <span class="cm">// Aggiornamento con ??=:</span>
-p.Email ??= <span class="str">"marco@email.it"</span>;  <span class="cm">// assegna perché è null</span>
-p.Email ??= <span class="str">"altro@email.it"</span>;  <span class="cm">// NON cambia, già impostata</span></pre>
+p.Email ??= <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="127f7360717d52777f737b7e3c7b66">[email&#160;protected]</a>"</span>;  <span class="cm">// assegna perché è null</span>
+p.Email ??= <span class="str">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4a2b263e38250a2f272b232664233e">[email&#160;protected]</a>"</span>;  <span class="cm">// NON cambia, già impostata</span></pre>
 
     <h4>Errori comuni</h4>
     <pre><span class="cm">// 1. Dimenticare ? e avere NullReferenceException:</span>
@@ -3782,6 +3782,7 @@ Console.<span class="fn">WriteLine</span>(<span class="str">$"Creati: {ContaOgge
   </div>
 </div>
 
+    </div>
     <!-- SECTION INTERMEDIO (17) -->
     <div class="section" id="section-intermediate">
       <div class="section-title">II — Intermedio <span class="tag">INT</span></div>
@@ -5076,7 +5077,7 @@ Web.<span class="ty">HttpContext</span> ctx = ...;
   </main>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const MODS = ['fundamentals','intermediate','advanced'];
 
 let currentMod = 'fundamentals';
